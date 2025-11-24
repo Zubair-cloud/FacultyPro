@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Faculty Pro - v24</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <script id="tailwind-config">
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "primary": "#4A90E2",
+                            "primary-dark": "#2E5BFF",
+                            "accent": "#D0021B",
+                            "background-light": "#F4F6F8",
+                            "background-dark": "#101622",
+                            "surface": "rgba(255, 255, 255, 0.05)"
+                        },
+                        fontFamily: {
+                            "display": ["Lexend", "sans-serif"]
+                        },
+                        borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px" },
+                    },
+                },
+            }
+        } catch (e) { console.log("Tailwind loaded later"); }
+    </script>
+
+    <style>
+        body {
+            background-color: #101622;
+            color: white;
+            font-family: 'Lexend', sans-serif;
+            height: 100dvh;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:active {
+            transform: scale(0.98);
+            background-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .page {
+            position: absolute;
+            inset: 0;
+            padding-bottom: 100px;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateY(10px) scale(0.99);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .page.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+            z-index: 20;
+        }
+
+        select,
+        input,
+        textarea {
+            background-color: rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: white !important;
+            transition: border-color 0.2s ease;
+        }
+
+        select:focus,
+        input:focus,
+        textarea:focus {
+            border-color: #4A90E2 !important;
+            ring: 0 !important;
+            outline: none !important;
+        }
+
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        #attendance-dock,
+        #bottom-nav {
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay {
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 60;
+            background-color: rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: scale(0.95);
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
+        .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-gradient-to-br from-[#101622] to-[#1a1f2c]">
+        <div class="absolute -top-20 -left-20 h-64 w-64 rounded-full bg-[#2E5BFF]/20 blur-3xl"></div>
+        <div class="absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-[#FF3B30]/20 blur-3xl"></div>
+    </div>
+
+    <div
+        class="relative z-10 h-full w-full md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col bg-[#101622]/50 shadow-2xl border-x border-white/5 backdrop-blur-sm">
+
+        <div id="page-home" class="page active">
+            <div class="flex flex-col gap-2 p-6 pb-2">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="size-12 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/20">
+                            F</div>
+                        <div>
+                            <p class="text-sm text-gray-400 font-medium">Welcome back,</p>
+                            <p id="home-greeting" class="text-xl font-bold text-white leading-tight">Faculty</p>
+                        </div>
+                    </div>
+                    <button onclick="nav('page-settings')"
+                        class="size-10 flex items-center justify-center rounded-xl glass-card transition hover:bg-white/10"><span
+                            class="material-symbols-outlined text-white">settings</span></button>
+                </div>
+            </div>
+            <div class="px-6 pt-4">
+                <div class="flex justify-between items-end mb-4">
+                    <h2 class="text-[22px] font-bold text-white">Today's Schedule</h2>
+                    <button onclick="openModal('modal-add-class')"
+                        class="text-primary text-sm font-bold flex items-center gap-1 bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition"><span
+                            class="material-symbols-outlined text-lg">add</span> New Class</button>
+                </div>
+                <div id="home-class-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-24"></div>
+            </div>
+        </div>
+
+        <div id="page-attendance" class="page">
+            <div
+                class="sticky top-0 z-30 bg-background-dark/90 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+                <button onclick="nav('page-home')"
+                    class="size-10 flex items-center justify-center rounded-full glass-card text-white hover:bg-white/10 transition"><span
+                        class="material-symbols-outlined">arrow_back</span></button>
+                <div class="text-center date-trigger">
+                    <h2 id="att-title" class="text-lg font-bold text-white">Class</h2>
+                    <div
+                        class="flex items-center justify-center gap-1 text-primary text-xs font-medium bg-primary/10 px-3 py-1 rounded-full mt-1">
+                        <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+                        <span id="att-date-display">Today</span>
+                    </div>
+                    <input type="date" id="att-date-input" onchange="onDateChange(this)">
+                </div>
+                <div class="size-10"></div>
+            </div>
+            <div class="p-4 pb-32">
+                <div class="glass-card p-4 rounded-2xl mb-4 flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-400">Total Students</p>
+                        <p class="text-2xl font-bold text-white" id="att-total-count">0</p>
+                    </div>
+                    <button onclick="toggleAllPresent()"
+                        class="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl active:scale-95 transition hover:bg-white/10"><span
+                            class="material-symbols-outlined text-green-400">check_circle</span><span
+                            class="text-sm font-medium">Mark All Present</span></button>
+                </div>
+                <div id="att-student-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            </div>
+        </div>
+
+        <div id="page-manage" class="page">
+            <div class="flex items-center justify-between p-6 pb-2">
+                <h1 class="text-2xl font-bold text-white">Manage</h1>
+                <button onclick="nav('page-home')"
+                    class="size-10 flex items-center justify-center rounded-full glass-card text-white"><span
+                        class="material-symbols-outlined">close</span></button>
+            </div>
+            <div class="p-6 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col items-center justify-center gap-2 rounded-xl glass-card p-4 text-center cursor-pointer hover:bg-white/5 transition"
+                        onclick="triggerEditClassDetails()">
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-[#2E5BFF]">
+                            <span class="material-symbols-outlined text-3xl">edit_document</span>
+                        </div>
+                        <p class="text-sm font-semibold text-white">Edit Details</p>
+                    </div>
+                    <div class="flex flex-col items-center justify-center gap-2 rounded-xl glass-card p-4 text-center cursor-pointer hover:bg-white/5 transition"
+                        onclick="triggerEditTimings()">
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-full bg-red-500/20 text-[#FF3B30]">
+                            <span class="material-symbols-outlined text-3xl">edit_calendar</span>
+                        </div>
+                        <p class="text-sm font-semibold text-white">Edit Timings</p>
+                    </div>
+                </div>
+                <div class="rounded-xl glass-card p-4">
+                    <div class="flex items-center gap-3 mb-2"><span
+                            class="material-symbols-outlined text-3xl text-white">history</span>
+                        <h3 class="text-lg font-semibold text-white">History</h3>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-400 mb-4">View past records.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <select id="hist-class-select"
+                            class="form-select w-full rounded-lg border-none bg-black/20 px-4 py-3 text-sm text-white focus:ring-2 focus:ring-[#2E5BFF]"></select>
+                        <input type="date" id="hist-date-input"
+                            class="w-full rounded-lg border-none bg-black/20 px-4 py-3 text-sm text-white focus:ring-2 focus:ring-[#2E5BFF]">
+                    </div>
+                    <button onclick="goToHistory('view')"
+                        class="mt-4 w-full rounded-lg glass-card py-3 font-bold text-white hover:bg-white/10 transition">View
+                        Record</button>
+                </div>
+                <div class="rounded-xl glass-card p-4">
+                    <div class="flex items-center gap-3 mb-2"><span
+                            class="material-symbols-outlined text-3xl text-white">event_available</span>
+                        <h3 class="text-lg font-semibold text-white">Backlog</h3>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-400 mb-4">Add attendance for past dates.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <select id="backlog-class-select"
+                            class="form-select w-full rounded-lg border-none bg-black/20 px-4 py-3 text-sm text-white focus:ring-2 focus:ring-[#2E5BFF]"></select>
+                        <input type="date" id="backlog-date-input"
+                            class="w-full rounded-lg border-none bg-black/20 px-4 py-3 text-sm text-white focus:ring-2 focus:ring-[#2E5BFF]">
+                    </div>
+                    <button onclick="goToHistory('add')"
+                        class="mt-4 w-full flex items-center justify-center gap-2 rounded-lg bg-[#2E5BFF] px-4 py-3 text-base font-bold text-white shadow-lg shadow-[#2E5BFF]/20 transition active:scale-95"><span
+                            class="material-symbols-outlined">add_task</span> Add Attendance</button>
+                </div>
+                <div class="pt-4">
+                    <h3 class="text-lg font-bold text-white mb-3">Student Roster</h3>
+                    <div class="flex gap-3 mb-4">
+                        <select id="manage-class-select"
+                            class="form-select flex-1 rounded-lg bg-black/20 border-none px-4 py-3 text-sm text-white"
+                            onchange="loadManageList()"></select>
+                        <button onclick="openModal('modal-bulk')"
+                            class="glass-card px-3 rounded-lg text-green-400"><span
+                                class="material-symbols-outlined">upload_file</span></button>
+                        <button onclick="openModal('modal-add-student')"
+                            class="glass-card px-3 rounded-lg text-blue-400"><span
+                                class="material-symbols-outlined">person_add</span></button>
+                    </div>
+                    <div id="manage-list" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+                    <button id="btn-delete-class" onclick="deleteCurrentClass()"
+                        class="hidden mt-4 w-full rounded-lg border border-red-500/30 bg-red-500/10 py-3 text-sm font-bold text-red-500 hover:bg-red-500/20 transition flex items-center justify-center gap-2"><span
+                            class="material-symbols-outlined">delete_forever</span> Delete Class</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-export" class="page">
+            <div class="flex items-center p-4 pb-2">
+                <h2 class="text-white text-xl font-bold flex-1 text-center">Export Data</h2>
+            </div>
+            <div class="p-6 space-y-6 max-w-2xl mx-auto">
+                <div class="glass-panel rounded-2xl p-6 space-y-6">
+                    <h3 class="text-white text-2xl font-bold">Export Report</h3>
+                    <div><label class="text-gray-400 text-sm font-medium pb-2 block">Select Class</label><select
+                            id="export-class"
+                            class="form-select w-full rounded-xl bg-black/20 border-none px-4 py-3.5 text-white"></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="text-gray-400 text-sm font-medium pb-2 block">Start Date</label><input
+                                type="date" id="export-start"
+                                class="w-full rounded-xl bg-black/20 border-none px-4 py-3 text-white text-sm"></div>
+                        <div><label class="text-gray-400 text-sm font-medium pb-2 block">End Date</label><input
+                                type="date" id="export-end"
+                                class="w-full rounded-xl bg-black/20 border-none px-4 py-3 text-white text-sm"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="generateReport('pdf')"
+                            class="flex flex-col items-center justify-center gap-2 h-20 rounded-xl glass-card border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition"><span
+                                class="material-symbols-outlined text-red-400 text-3xl">picture_as_pdf</span><span
+                                class="text-xs font-bold text-red-100">PDF</span></button>
+                        <button onclick="generateReport('csv')"
+                            class="flex flex-col items-center justify-center gap-2 h-20 rounded-xl glass-card border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition"><span
+                                class="material-symbols-outlined text-green-400 text-3xl">table_view</span><span
+                                class="text-xs font-bold text-green-100">Excel / CSV</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-settings" class="page">
+            <div class="flex items-center p-4 justify-between"><button onclick="nav('page-home')"
+                    class="text-white hover:text-primary transition"><span
+                        class="material-symbols-outlined">arrow_back</span></button>
+                <h2 class="text-white text-lg font-bold">Settings</h2>
+                <div class="size-6"></div>
+            </div>
+            <div class="p-4 pt-4 flex flex-col gap-6 max-w-2xl mx-auto">
+                <div class="flex items-center gap-4 p-6 rounded-2xl glass-card">
+                    <div
+                        class="size-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                        F</div>
+                    <div class="flex-1 space-y-2">
+                        <input id="set-name" placeholder="Faculty Name"
+                            class="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-500 focus:ring-0">
+                        <input id="set-phone" placeholder="Faculty ID/Phone"
+                            class="w-full bg-transparent border-none p-0 text-sm text-gray-400 placeholder-gray-600 focus:ring-0">
+                        <input id="set-subject" placeholder="Subject"
+                            class="w-full bg-transparent border-none p-0 text-sm text-primary font-bold placeholder-gray-600 focus:ring-0">
+                    </div>
+                    <button onclick="saveProfile()"
+                        class="text-primary font-bold text-sm hover:text-white transition">SAVE</button>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button onclick="backupData()"
+                        class="flex items-center gap-4 p-4 rounded-2xl glass-card active:bg-white/10 transition hover:bg-white/5">
+                        <div class="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined">cloud_upload</span>
+                        </div>
+                        <div class="text-left flex-1">
+                            <p class="text-white font-medium">Backup Data</p>
+                            <p class="text-gray-400 text-xs">Export as JSON</p>
+                        </div><span class="material-symbols-outlined text-gray-500">chevron_right</span>
+                    </button>
+
+                    <div class="relative">
+                        <input type="file" id="restore-file" class="hidden" onchange="restoreData(this)">
+                        <button onclick="triggerRestore()"
+                            class="w-full flex items-center gap-4 p-4 rounded-2xl glass-card active:bg-white/10 transition hover:bg-white/5">
+                            <div class="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+                                <span class="material-symbols-outlined">cloud_download</span>
+                            </div>
+                            <div class="text-left flex-1">
+                                <p class="text-white font-medium">Restore Data</p>
+                                <p class="text-gray-400 text-xs">Import from JSON</p>
+                            </div>
+                            <span class="material-symbols-outlined text-gray-500">chevron_right</span>
+                        </button>
+                    </div>
+
+                    <button onclick="wipeData()"
+                        class="flex items-center gap-4 p-4 rounded-2xl glass-card border border-red-500/20 active:bg-red-500/10 transition mt-4 hover:bg-red-500/5">
+                        <div class="size-12 rounded-xl bg-red-500/20 flex items-center justify-center text-red-500">
+                            <span class="material-symbols-outlined">delete_forever</span>
+                        </div>
+                        <div class="text-left flex-1">
+                            <p class="text-white font-medium">Reset App</p>
+                            <p class="text-gray-400 text-xs">Clear all local data</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="bottom-nav"
+        class="fixed bottom-0 left-0 right-0 w-full z-50 md:max-w-3xl lg:max-w-5xl mx-auto transform translate-y-0">
+        <div
+            class="glass-panel border-t border-white/10 backdrop-blur-xl px-6 py-3 flex justify-between items-center rounded-t-2xl md:rounded-t-none">
+            <button onclick="nav('page-home')"
+                class="nav-item active flex flex-col items-center gap-1 text-gray-500 transition hover:text-primary"
+                id="nav-home">
+                <div class="icon-container size-10 rounded-xl flex items-center justify-center transition-colors"><span
+                        class="material-symbols-outlined filled">home</span></div><span
+                    class="text-[10px] font-medium">Home</span>
+            </button>
+            <button onclick="nav('page-manage')"
+                class="nav-item flex flex-col items-center gap-1 text-gray-500 transition hover:text-primary"
+                id="nav-manage">
+                <div class="icon-container size-10 rounded-xl flex items-center justify-center transition-colors"><span
+                        class="material-symbols-outlined">groups</span></div><span
+                    class="text-[10px] font-medium">Manage</span>
+            </button>
+            <button onclick="nav('page-export')"
+                class="nav-item flex flex-col items-center gap-1 text-gray-500 transition hover:text-primary"
+                id="nav-export">
+                <div class="icon-container size-10 rounded-xl flex items-center justify-center transition-colors"><span
+                        class="material-symbols-outlined">upload_file</span></div><span
+                    class="text-[10px] font-medium">Export</span>
+            </button>
+            <button onclick="nav('page-settings')"
+                class="nav-item flex flex-col items-center gap-1 text-gray-500 transition hover:text-primary"
+                id="nav-settings">
+                <div class="icon-container size-10 rounded-xl flex items-center justify-center transition-colors"><span
+                        class="material-symbols-outlined">person</span></div><span
+                    class="text-[10px] font-medium">Profile</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="attendance-dock"
+        class="fixed bottom-0 left-0 right-0 w-full bg-[#101622] border-t border-white/10 p-4 z-[60] md:max-w-3xl lg:max-w-5xl mx-auto shadow-2xl shadow-black transform translate-y-full">
+        <div class="flex gap-3">
+            <button onclick="saveAttendance('draft')"
+                class="flex-1 h-14 rounded-xl glass-card border-yellow-500/30 text-yellow-400 font-bold active:scale-95 transition flex items-center justify-center gap-2 hover:bg-yellow-500/10"><span
+                    class="material-symbols-outlined">edit_calendar</span> Late Entry</button>
+            <button onclick="saveAttendance('final')"
+                class="flex-1 h-14 rounded-xl bg-primary text-white font-bold active:scale-95 transition flex items-center justify-center gap-2 hover:bg-primary-dark"><span
+                    class="material-symbols-outlined">save</span> Final Save</button>
+        </div>
+    </div>
+
+    <div id="modal-add-class"
+        class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="modal-content w-full max-w-sm rounded-2xl glass-card p-6 border border-white/10 bg-[#1a1f2c]">
+            <h3 class="mb-4 text-center text-xl font-bold text-white" id="modal-class-title">Create New Class</h3>
+            <input type="hidden" id="edit-class-id">
+            <div class="space-y-4">
+                <div><label class="text-sm text-gray-400 pb-1 block">Class Name</label><input id="new-class-name"
+                        placeholder="e.g., CS-101" class="w-full rounded-xl px-4 py-3 text-white"></div>
+                <div><label class="text-sm text-gray-400 pb-1 block">Time</label>
+                    <div class="relative"><input type="time" id="new-class-time"
+                            class="w-full rounded-xl px-4 py-3 text-white bg-white/5"><span
+                            class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">schedule</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeModal('modal-add-class')"
+                    class="flex-1 rounded-xl glass-card py-3 font-bold text-gray-300 hover:bg-white/5">Cancel</button>
+                <button id="btn-save-class" onclick="saveClassToDB()"
+                    class="flex-1 rounded-xl bg-primary py-3 font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit-timings"
+        class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="modal-content w-full max-w-sm rounded-2xl glass-card p-6 border border-white/10 bg-[#1a1f2c]">
+            <h3 class="mb-4 text-center text-xl font-bold text-white">Edit Class Timings</h3>
+            <div class="space-y-4">
+                <div><label class="text-sm text-gray-400 pb-1 block">Select Class</label><select
+                        id="timing-class-select"
+                        class="form-select w-full rounded-lg border-none bg-black/20 px-4 py-3 text-sm text-white focus:ring-2 focus:ring-[#2E5BFF]"
+                        onchange="onTimingClassSelect()"></select></div>
+                <div><label class="text-sm text-gray-400 pb-1 block">New Time</label>
+                    <div class="relative"><input type="time" id="timing-new-time"
+                            class="w-full rounded-xl px-4 py-3 text-white bg-white/5"><span
+                            class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">schedule</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeModal('modal-edit-timings')"
+                    class="flex-1 rounded-xl glass-card py-3 font-bold text-gray-300 hover:bg-white/5">Cancel</button>
+                <button onclick="updateClassTiming()"
+                    class="flex-1 rounded-xl bg-primary py-3 font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark">Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-add-student"
+        class="modal-overlay fixed inset-0 z-[60] hidden items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
+        <div
+            class="modal-content w-full sm:max-w-sm rounded-t-2xl sm:rounded-2xl glass-card p-6 border border-white/10 bg-[#1a1f2c]">
+            <h3 class="mb-4 text-lg font-bold text-white" id="modal-student-title">Add Student</h3>
+            <input type="hidden" id="edit-student-id">
+            <div class="space-y-3">
+                <input id="s-name" placeholder="Full Name" class="w-full rounded-xl px-4 py-3">
+                <input id="s-reg" placeholder="Register Number / ID" class="w-full rounded-xl px-4 py-3">
+                <input id="s-phone" placeholder="Phone" class="w-full rounded-xl px-4 py-3">
+                <input id="s-email" placeholder="Email" class="w-full rounded-xl px-4 py-3">
+                <textarea id="s-addr" placeholder="Address" rows="2" class="w-full rounded-xl px-4 py-3"></textarea>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeModal('modal-add-student')"
+                    class="flex-1 rounded-xl glass-card py-3 font-bold text-gray-300 hover:bg-white/5">Cancel</button>
+                <button onclick="saveStudentToDB()"
+                    class="flex-1 rounded-xl bg-primary py-3 font-bold text-white hover:bg-primary-dark">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-student-details"
+        class="modal-overlay fixed inset-0 z-[65] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div
+            class="modal-content w-full max-w-sm rounded-2xl glass-card p-0 border border-white/10 bg-[#1a1f2c] flex flex-col max-h-[85vh]">
+            <div class="p-6 border-b border-white/10 bg-white/5">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-xl font-bold text-white" id="det-name">Student Name</h3>
+                        <p class="text-sm text-gray-400" id="det-reg">Reg No</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editCurrentStudent()"
+                            class="text-primary hover:text-white transition p-1"><span
+                                class="material-symbols-outlined">edit</span></button>
+                        <button onclick="closeModal('modal-student-details')"
+                            class="text-gray-400 hover:text-white transition p-1"><span
+                                class="material-symbols-outlined">close</span></button>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-2 text-xs text-gray-300">
+                    <div class="bg-black/20 p-2 rounded"><span class="block text-gray-500">Phone</span><span
+                            id="det-phone">-</span></div>
+                    <div class="bg-black/20 p-2 rounded"><span class="block text-gray-500">Email</span><span
+                            id="det-email">-</span></div>
+                    <div class="bg-black/20 p-2 rounded col-span-2"><span
+                            class="block text-gray-500">Address</span><span id="det-addr">-</span></div>
+                </div>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4">
+                <div id="details-list" class="space-y-3"></div>
+                <div class="pt-4 border-t border-white/10">
+                    <p class="text-sm font-medium text-primary mb-3" id="detail-form-title">Add New Label</p>
+                    <input id="new-det-label" placeholder="Label (e.g. Project, Medical)"
+                        class="w-full rounded-xl px-3 py-2 text-sm mb-2">
+                    <textarea id="new-det-value" placeholder="Details..." rows="2"
+                        class="w-full rounded-xl px-3 py-2 text-sm mb-2"></textarea>
+                    <div class="flex gap-2">
+                        <button id="btn-cancel-edit" onclick="cancelEditDetail()"
+                            class="hidden w-1/3 rounded-xl glass-card py-2 font-bold text-sm text-gray-300 hover:bg-white/10">Cancel</button>
+                        <button id="btn-save-detail" onclick="saveDetail()"
+                            class="flex-1 rounded-xl bg-primary/20 text-primary border border-primary/30 py-2 font-bold text-sm hover:bg-primary hover:text-white transition">Save
+                            Detail</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-bulk"
+        class="modal-overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="modal-content w-full max-w-lg rounded-2xl glass-card p-6 border border-white/10 bg-[#1a1f2c]">
+            <h3 class="mb-2 text-lg font-bold text-white">Bulk Import</h3>
+            <div class="bg-blue-900/30 border border-blue-500/30 rounded-lg p-3 mb-3 text-xs text-blue-200">
+                <p class="font-bold mb-1">Format (Tab Separated):</p>
+                <code>Name  |  RegNo  |  Phone  |  Email  |  Address</code>
+                <p class="mt-1 opacity-70">Copy from Excel.</p>
+            </div>
+            <textarea id="bulk-text" rows="8" class="w-full rounded-xl px-4 py-3 text-xs font-mono whitespace-pre"
+                placeholder="John Doe	101	9876543210	john@mail.com	City A"></textarea>
+            <div class="mt-6 flex gap-3">
+                <button onclick="closeModal('modal-bulk')"
+                    class="flex-1 rounded-xl glass-card py-3 font-bold text-gray-300 hover:bg-white/5">Cancel</button>
+                <button onclick="processBulk()"
+                    class="flex-1 rounded-xl bg-green-600 py-3 font-bold text-white hover:bg-green-700 btn-glow">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"
+        class="fixed top-6 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-3 rounded-full bg-white/10 backdrop-blur-md border border-white/10 px-5 py-3 text-sm font-semibold text-white shadow-xl opacity-0 pointer-events-none transition-all transform translate-y-[-20px]">
+        <span class="material-symbols-outlined text-green-400">check_circle</span><span id="toast-msg">Success</span>
+    </div>
+
+    <script>
+        // --- 1. STATE ---
+        let db; let classes = []; let activeClass = null; let tempAttendance = {}; let currentStudents = [];
+        let activeStudentForDetails = null; let editingDetailIndex = -1;
+        let currentAttendanceDate = new Date().toLocaleDateString('en-CA');
+
+        // --- 2. INIT ---
+        window.onload = async () => {
+            document.getElementById('export-end').valueAsDate = new Date();
+            document.getElementById('export-start').valueAsDate = new Date(new Date().setDate(new Date().getDate() - 30));
+            await initDB(); loadProfile(); loadClasses();
+        };
+
+        // --- 3. NAVIGATION ---
+        function nav(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const navId = 'nav-' + pageId.replace('page-', '');
+            const navEl = document.getElementById(navId);
+            if (navEl) navEl.classList.add('active');
+
+            if (pageId === 'page-manage') loadManageClasses();
+            if (pageId === 'page-export') loadExportClasses();
+
+            const bottomNav = document.getElementById('bottom-nav');
+            const attDock = document.getElementById('attendance-dock');
+            if (pageId === 'page-attendance') { bottomNav.style.transform = 'translateY(100%)'; attDock.style.transform = 'translateY(0)'; }
+            else { bottomNav.style.transform = 'translateY(0)'; attDock.style.transform = 'translateY(100%)'; }
+            if (pageId === 'page-settings') bottomNav.style.transform = 'translateY(100%)';
+        }
+
+        // --- 4. INDEXEDDB (VERSION 4 - FORCE UPGRADE) ---
+        function initDB() {
+            return new Promise(resolve => {
+                const req = indexedDB.open('FacultyUltimateDB', 4);
+                req.onupgradeneeded = e => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('classes')) db.createObjectStore('classes', { keyPath: 'id', autoIncrement: true });
+                    if (!db.objectStoreNames.contains('students')) { const s = db.createObjectStore('students', { keyPath: 'id', autoIncrement: true }); s.createIndex('classId', 'classId', { unique: false }); }
+                    if (!db.objectStoreNames.contains('attendance')) { const a = db.createObjectStore('attendance', { keyPath: 'id', autoIncrement: true }); a.createIndex('classId', 'classId', { unique: false }); }
+                };
+                req.onsuccess = e => { db = e.target.result; resolve(); };
+                req.onerror = e => { console.error("DB Error", e); showToast("DB Failed"); };
+            });
+        }
+
+        // --- 5. HOME LOGIC ---
+        function loadClasses() {
+            if (!db) return;
+            const tx = db.transaction('classes', 'readonly');
+            tx.objectStore('classes').getAll().onsuccess = e => { classes = e.target.result; renderHomeList(); };
+        }
+
+        function renderHomeList() {
+            const list = document.getElementById('home-class-list');
+            list.innerHTML = '';
+            if (classes.length === 0) { list.innerHTML = `<div class="glass-card p-8 text-center rounded-2xl col-span-full"><span class="material-symbols-outlined text-4xl text-gray-600 mb-2">calendar_today</span><p class="text-gray-400">No classes yet.</p></div>`; return; }
+            classes.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'glass-card p-4 rounded-2xl flex justify-between items-center active:bg-white/5 transition cursor-pointer border-l-4 border-primary hover:bg-white/5';
+                div.onclick = () => openAttendance(c);
+                div.innerHTML = `<div><h3 class="text-lg font-bold text-white">${c.name}</h3><div class="flex items-center gap-2 mt-1"><span class="material-symbols-outlined text-gray-400 text-sm">schedule</span><p class="text-sm text-gray-400 font-medium">${c.time || 'Flexible'}</p></div></div><button class="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transition-transform hover:scale-110"><span class="material-symbols-outlined">chevron_right</span></button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function addClass() {
+            document.getElementById('modal-class-title').innerText = "Create New Class";
+            document.getElementById('edit-class-id').value = "";
+            document.getElementById('new-class-name').value = "";
+            document.getElementById('new-class-time').value = "";
+            openModal('modal-add-class');
+        }
+
+        function saveClassToDB() {
+            if (!db) return showToast("DB Loading...");
+            const id = document.getElementById('edit-class-id').value;
+            const name = document.getElementById('new-class-name').value;
+            const time = document.getElementById('new-class-time').value;
+            if (!name) return showToast("Name required");
+
+            const btn = document.getElementById('btn-save-class');
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            const tx = db.transaction('classes', 'readwrite');
+            const store = tx.objectStore('classes');
+
+            if (id) {
+                store.get(parseInt(id)).onsuccess = e => {
+                    const data = e.target.result;
+                    if (data) { data.name = name; data.time = time; store.put(data); }
+                };
+            } else {
+                store.add({ name, time });
+            }
+
+            tx.oncomplete = () => {
+                closeModal('modal-add-class');
+                loadClasses();
+                loadManageClasses();
+                showToast(id ? "Class Updated" : "Class Created");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            };
+            tx.onerror = () => {
+                showToast("Error Saving Class");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // --- 6. ATTENDANCE LOGIC ---
+        async function openAttendance(cls) {
+            activeClass = cls; nav('page-attendance');
+            document.getElementById('att-title').innerText = cls.name;
+            const today = new Date().toLocaleDateString('en-CA');
+            document.getElementById('att-date-input').value = today;
+            document.getElementById('att-date-display').innerText = "Today";
+            currentAttendanceDate = today;
+            loadAttendanceForDate(today);
+        }
+
+        function onDateChange(input) {
+            const date = input.value;
+            if (date) {
+                currentAttendanceDate = date;
+                const dateObj = new Date(date);
+                document.getElementById('att-date-display').innerText = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                loadAttendanceForDate(date);
+            }
+        }
+
+        function loadAttendanceForDate(dateStr) {
+            const tx = db.transaction('students', 'readonly');
+            const idx = tx.objectStore('students').index('classId');
+            idx.getAll(activeClass.id).onsuccess = async e => {
+                currentStudents = e.target.result;
+                currentStudents.sort((a, b) => a.regNo.localeCompare(b.regNo, undefined, { numeric: true }));
+                document.getElementById('att-total-count').innerText = currentStudents.length;
+                const existing = await getLog(activeClass.id, dateStr);
+                renderAttendanceList(existing ? existing.records : null, existing ? existing.status === 'final' : false);
+            };
+        }
+
+        function renderAttendanceList(savedRecords, isLocked) {
+            const list = document.getElementById('att-student-list');
+            list.innerHTML = ''; tempAttendance = {};
+            if (currentStudents.length === 0) { list.innerHTML = `<div class="text-center text-gray-500 py-10 col-span-full">No students found.</div>`; return; }
+            currentStudents.forEach(s => {
+                let status = 'Present';
+                if (savedRecords && savedRecords[s.id]) status = savedRecords[s.id];
+                tempAttendance[s.id] = status;
+                const div = document.createElement('div');
+                div.className = 'glass-card p-3 rounded-xl flex justify-between items-center transition-all duration-300';
+                const btnClass = status === 'Present' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
+                div.innerHTML = `<div class="flex items-center gap-3"><div class="size-10 rounded-full bg-white/5 flex items-center justify-center text-gray-300 font-bold text-sm border border-white/10">${s.regNo.slice(-2)}</div><div><p class="text-white font-semibold text-sm">${s.name}</p><p class="text-xs text-gray-500">${s.regNo}</p></div></div><button id="btn-${s.id}" onclick="toggleStd(${s.id}, ${isLocked})" class="h-10 px-4 rounded-lg border font-bold text-sm transition-all duration-300 ${btnClass}">${status === 'Present' ? 'PRESENT' : 'ABSENT'}</button>`;
+                list.appendChild(div);
+            });
+        }
+
+        function toggleStd(id, locked) {
+            if (locked) return showToast("Attendance Locked");
+            const curr = tempAttendance[id];
+            const next = curr === 'Present' ? 'Absent' : 'Present';
+            tempAttendance[id] = next;
+            const btn = document.getElementById(`btn-${id}`);
+            if (next === 'Present') { btn.className = "h-10 px-4 rounded-lg border font-bold text-sm transition-all duration-300 bg-green-500/20 text-green-400 border-green-500/30"; btn.innerText = "PRESENT"; }
+            else { btn.className = "h-10 px-4 rounded-lg border font-bold text-sm transition-all duration-300 bg-red-500/20 text-red-400 border-red-500/30"; btn.innerText = "ABSENT"; }
+        }
+
+        function toggleAllPresent() {
+            Object.keys(tempAttendance).forEach(id => {
+                tempAttendance[id] = 'Present';
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) { btn.className = "h-10 px-4 rounded-lg border font-bold text-sm transition-all duration-300 bg-green-500/20 text-green-400 border-green-500/30"; btn.innerText = "PRESENT"; }
+            });
+            showToast("Marked All Present");
+        }
+
+        function saveAttendance(mode) {
+            if (!activeClass) return;
+            const record = { classId: activeClass.id, date: currentAttendanceDate, timestamp: Date.now(), status: mode, records: tempAttendance };
+            const tx = db.transaction('attendance', 'readwrite');
+            const store = tx.objectStore('attendance');
+            const idx = store.index('classId');
+            idx.getAll(activeClass.id).onsuccess = e => {
+                const all = e.target.result;
+                const exist = all.find(x => x.date === record.date);
+                if (exist) record.id = exist.id;
+                store.put(record);
+                tx.oncomplete = () => { showToast(mode === 'final' ? "Locked & Saved" : "Saved as Draft"); };
+            };
+        }
+
+        function getLog(cid, date) { return new Promise(r => { const tx = db.transaction('attendance', 'readonly'); const idx = tx.objectStore('attendance').index('classId'); idx.getAll(cid).onsuccess = e => { r(e.target.result.find(l => l.date === date)); }; }); }
+
+        // --- MANAGE LOGIC ---
+        function triggerEditClass() {
+            const sel = document.getElementById('manage-class-select');
+            if (!sel.value) return showToast("Select a class in Roster first");
+            const cls = classes.find(c => c.id === parseInt(sel.value));
+            if (cls) {
+                document.getElementById('modal-class-title').innerText = "Edit Class";
+                document.getElementById('edit-class-id').value = cls.id;
+                document.getElementById('new-class-name').value = cls.name;
+                document.getElementById('new-class-time').value = cls.time;
+                openModal('modal-add-class');
+            }
+        }
+
+        function triggerEditTimings() {
+            const sel = document.getElementById('timing-class-select');
+            sel.innerHTML = '';
+            classes.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.text = c.name; sel.add(opt); });
+            const manageSel = document.getElementById('manage-class-select');
+            if (manageSel.value) sel.value = manageSel.value;
+            openModal('modal-edit-timings');
+            onTimingClassSelect();
+        }
+
+        function onTimingClassSelect() {
+            const id = parseInt(document.getElementById('timing-class-select').value);
+            const cls = classes.find(c => c.id === id);
+            if (cls) document.getElementById('timing-new-time').value = cls.time;
+        }
+
+        function updateClassTiming() {
+            const id = parseInt(document.getElementById('timing-class-select').value);
+            const time = document.getElementById('timing-new-time').value;
+            if (!id) return showToast("Select a Class");
+            const tx = db.transaction('classes', 'readwrite');
+            const store = tx.objectStore('classes');
+            store.get(id).onsuccess = e => { const data = e.target.result; data.time = time; store.put(data); };
+            tx.oncomplete = () => { closeModal('modal-edit-timings'); loadClasses(); loadManageClasses(); showToast("Timings Updated"); };
+        }
+
+        function deleteCurrentClass() {
+            const id = parseInt(document.getElementById('manage-class-select').value);
+            if (!id) return showToast("No Class Selected");
+            if (!confirm("Delete this Class and ALL its data?")) return;
+            const tx = db.transaction(['classes', 'students', 'attendance'], 'readwrite');
+            tx.objectStore('classes').delete(id);
+            tx.oncomplete = () => { loadClasses(); loadManageClasses(); showToast("Class Deleted"); }
+        }
+
+        function goToHistory(mode) {
+            const selId = mode === 'view' ? 'hist-class-select' : 'backlog-class-select';
+            const dateId = mode === 'view' ? 'hist-date-input' : 'backlog-date-input';
+            const clsId = parseInt(document.getElementById(selId).value);
+            const date = document.getElementById(dateId).value;
+            if (!clsId) return showToast("Select a Class");
+            if (!date) return showToast("Select a Date");
+
+            const cls = classes.find(c => c.id === clsId);
+            activeClass = cls;
+            nav('page-attendance');
+            document.getElementById('att-title').innerText = cls.name;
+            const dateObj = new Date(date);
+            document.getElementById('att-date-display').innerText = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            currentAttendanceDate = date;
+            loadAttendanceForDate(date);
+        }
+
+        function loadManageClasses() {
+            const sels = ['manage-class-select', 'hist-class-select', 'backlog-class-select'];
+            sels.forEach(id => {
+                const sel = document.getElementById(id);
+                const curr = sel.value;
+                sel.innerHTML = '';
+                classes.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.text = c.name; sel.add(opt); });
+                if (curr) sel.value = curr;
+            });
+            loadManageList();
+        }
+
+        function loadManageList() {
+            const cid = parseInt(document.getElementById('manage-class-select').value);
+            const delBtn = document.getElementById('btn-delete-class');
+            if (!cid) { document.getElementById('manage-list').innerHTML = '<p class="text-center text-gray-500 col-span-full py-4">Select a class above to manage students.</p>'; delBtn.classList.add('hidden'); return; }
+            delBtn.classList.remove('hidden');
+            const tx = db.transaction('students', 'readonly');
+            const idx = tx.objectStore('students').index('classId');
+            idx.getAll(cid).onsuccess = e => {
+                const studs = e.target.result;
+                // document.getElementById('manage-count').innerText = `Students (${studs.length})`; // Removed as element not in HTML
+                const list = document.getElementById('manage-list');
+                list.innerHTML = '';
+                studs.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'glass-card p-3 rounded-xl flex justify-between items-center cursor-pointer hover:bg-white/5 transition';
+                    div.onclick = () => openStudentDetails(s);
+                    div.innerHTML = `<div class="flex items-center gap-3"><div class="size-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-white text-xs font-bold">${s.name.charAt(0)}</div><div><p class="text-white font-medium text-sm">${s.name}</p><p class="text-xs text-gray-500">${s.regNo}</p></div></div><button onclick="event.stopPropagation(); deleteStudent(${s.id})" class="size-8 flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition"><span class="material-symbols-outlined text-lg">delete</span></button>`;
+                    list.appendChild(div);
+                });
+            };
+        }
+
+        // --- STUDENT DETAILS ---
+        function openStudentDetails(student) {
+            activeStudentForDetails = student;
+            cancelEditDetail();
+            document.getElementById('det-name').innerText = student.name;
+            document.getElementById('det-reg').innerText = student.regNo;
+            document.getElementById('det-phone').innerText = student.phone || '-';
+            document.getElementById('det-email').innerText = student.email || '-';
+            document.getElementById('det-addr').innerText = student.address || '-';
+            renderDetailsList();
+            openModal('modal-student-details');
+        }
+
+        function renderDetailsList() {
+            const list = document.getElementById('details-list'); list.innerHTML = ''; const details = activeStudentForDetails.details || [];
+            if (details.length === 0) { list.innerHTML = `<p class="text-xs text-gray-500 text-center py-2">No extra details added.</p>`; }
+            details.forEach((d, index) => {
+                const div = document.createElement('div');
+                div.className = `glass-card p-3 rounded-xl cursor-pointer hover:bg-white/5 transition group ${index === editingDetailIndex ? 'editing-card' : ''}`;
+                div.onclick = () => prepareEditDetail(index);
+                div.innerHTML = `<div class="flex justify-between items-start"><div><p class="text-xs text-primary font-bold uppercase flex items-center gap-2">${d.label}${index === editingDetailIndex ? '<span class="text-[10px] text-white bg-primary px-1.5 rounded">EDITING</span>' : ''}</p><p class="text-sm text-white mt-1 whitespace-pre-wrap">${d.value}</p></div><button onclick="event.stopPropagation(); deleteDetail(${index})" class="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition"><span class="material-symbols-outlined text-sm">delete</span></button></div>`;
+                list.appendChild(div);
+            });
+        }
+
+        function prepareEditDetail(index) {
+            const d = activeStudentForDetails.details[index]; editingDetailIndex = index;
+            document.getElementById('new-det-label').value = d.label; document.getElementById('new-det-value').value = d.value;
+            document.getElementById('detail-form-title').innerText = "Edit Label"; document.getElementById('btn-save-detail').innerText = "Update Detail";
+            document.getElementById('btn-cancel-edit').classList.remove('hidden'); renderDetailsList();
+        }
+
+        function cancelEditDetail() {
+            editingDetailIndex = -1;
+            document.getElementById('new-det-label').value = ''; document.getElementById('new-det-value').value = '';
+            document.getElementById('detail-form-title').innerText = "Add New Label"; document.getElementById('btn-save-detail').innerText = "Save Detail";
+            document.getElementById('btn-cancel-edit').classList.add('hidden'); if (activeStudentForDetails) renderDetailsList();
+        }
+
+        function saveDetail() {
+            const label = document.getElementById('new-det-label').value; const value = document.getElementById('new-det-value').value;
+            if (!label || !value) return showToast("Both fields required");
+            if (!activeStudentForDetails.details) activeStudentForDetails.details = [];
+            if (editingDetailIndex > -1) { activeStudentForDetails.details[editingDetailIndex] = { label, value }; showToast("Detail Updated"); }
+            else { activeStudentForDetails.details.push({ label, value }); showToast("Detail Added"); }
+            const tx = db.transaction('students', 'readwrite'); tx.objectStore('students').put(activeStudentForDetails); tx.oncomplete = () => { cancelEditDetail(); };
+        }
+
+        function deleteDetail(index) {
+            if (index === editingDetailIndex) cancelEditDetail();
+            activeStudentForDetails.details.splice(index, 1);
+            const tx = db.transaction('students', 'readwrite'); tx.objectStore('students').put(activeStudentForDetails); tx.oncomplete = () => { renderDetailsList(); showToast("Detail Removed"); };
+        }
+
+        function editCurrentStudent() {
+            closeModal('modal-student-details'); openModal('modal-add-student');
+            document.getElementById('modal-student-title').innerText = "Edit Student";
+            const s = activeStudentForDetails;
+            document.getElementById('edit-student-id').value = s.id; document.getElementById('s-name').value = s.name; document.getElementById('s-reg').value = s.regNo; document.getElementById('s-phone').value = s.phone || ''; document.getElementById('s-email').value = s.email || ''; document.getElementById('s-addr').value = s.address || '';
+        }
+
+        function openAddStudentModal() {
+            document.getElementById('modal-student-title').innerText = "Add Student";
+            document.getElementById('edit-student-id').value = '';
+            ['s-name', 's-reg', 's-phone', 's-email', 's-addr'].forEach(id => document.getElementById(id).value = '');
+            openModal('modal-add-student');
+        }
+
+        function saveStudentToDB() {
+            const cid = parseInt(document.getElementById('manage-class-select').value);
+            const id = document.getElementById('edit-student-id').value;
+            const name = document.getElementById('s-name').value; const reg = document.getElementById('s-reg').value; const phone = document.getElementById('s-phone').value; const email = document.getElementById('s-email').value; const address = document.getElementById('s-addr').value;
+            if (!name || !reg) return showToast("Name/Reg Missing");
+            const tx = db.transaction('students', 'readwrite'); const store = tx.objectStore('students');
+            if (id) { store.get(parseInt(id)).onsuccess = e => { const s = e.target.result; s.name = name; s.regNo = reg; s.phone = phone; s.email = email; s.address = address; store.put(s); }; }
+            else { store.add({ classId: cid, name, regNo: reg, phone, email, address, details: [] }); }
+            tx.oncomplete = () => { closeModal('modal-add-student'); loadManageList(); showToast(id ? "Student Updated" : "Student Added"); };
+        }
+
+        function processBulk() {
+            const cid = parseInt(document.getElementById('manage-class-select').value); const raw = document.getElementById('bulk-text').value; const lines = raw.split('\n');
+            const tx = db.transaction('students', 'readwrite'); const store = tx.objectStore('students'); let count = 0;
+            lines.forEach(l => { if (!l.trim()) return; let parts = l.trim().split(/\t+/); if (parts.length < 2) parts = l.trim().split(/\s{2,}/); if (parts.length >= 2) { store.add({ classId: cid, name: parts[0], regNo: parts[1], phone: parts[2] || '', email: parts[3] || '', address: parts[4] || '', details: [] }); count++; } });
+            tx.oncomplete = () => { closeModal('modal-bulk'); loadManageList(); showToast(`Imported ${count}`); };
+        }
+
+        function deleteStudent(id) { if (!confirm("Delete Student?")) return; const tx = db.transaction('students', 'readwrite'); tx.objectStore('students').delete(id); tx.oncomplete = () => loadManageList(); }
+
+        // --- EXPORT ---
+        function loadExportClasses() { const sel = document.getElementById('export-class'); sel.innerHTML = ''; classes.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.text = c.name; sel.add(opt); }); }
+
+        function generateReport(type) {
+            const cid = parseInt(document.getElementById('export-class').value); const start = new Date(document.getElementById('export-start').value); const end = new Date(document.getElementById('export-end').value);
+            const tx = db.transaction('attendance', 'readonly'); const idx = tx.objectStore('attendance').index('classId');
+            idx.getAll(cid).onsuccess = async e => {
+                let logs = e.target.result.filter(l => { const d = new Date(l.date); return d >= start && d <= end; });
+                if (logs.length === 0) return showToast("No records found");
+                const sTx = db.transaction('students', 'readonly'); const sIdx = sTx.objectStore('students').index('classId');
+                sIdx.getAll(cid).onsuccess = ev => {
+                    const students = ev.target.result; const sMap = {}; students.forEach(s => sMap[s.id] = s);
+                    if (type === 'csv') {
+                        let csv = "Date,Name,RegNo,Status\n"; logs.forEach(l => { Object.entries(l.records).forEach(([sid, stat]) => { const s = sMap[sid] || { name: 'Unknown', regNo: '-' }; csv += `${l.date},${s.name},${s.regNo},${stat}\n`; }); });
+                        downloadFile(csv, 'Report.csv', 'text/csv');
+                    } else {
+                        const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text("Attendance Report", 14, 10); const rows = [];
+                        logs.forEach(l => { Object.entries(l.records).forEach(([sid, stat]) => { const s = sMap[sid] || { name: 'Unknown', regNo: '-' }; rows.push([l.date, s.name, s.regNo, stat]); }); });
+                        doc.autoTable({ head: [['Date', 'Name', 'Reg', 'Status']], body: rows }); doc.save('Report.pdf');
+                    }
+                    showToast("Export Downloaded");
+                };
+            };
+        }
+
+        // --- SETTINGS ---
+        function loadProfile() {
+            const name = localStorage.getItem('fac_name') || 'Faculty';
+            const phone = localStorage.getItem('fac_id') || '';
+            const subject = localStorage.getItem('fac_subject') || '';
+
+            document.getElementById('set-name').value = name === 'Faculty' ? '' : name;
+            document.getElementById('set-phone').value = phone;
+            document.getElementById('set-subject').value = subject;
+
+            document.getElementById('home-greeting').innerText = name;
+        }
+
+        function saveProfile() {
+            localStorage.setItem('fac_name', document.getElementById('set-name').value);
+            localStorage.setItem('fac_id', document.getElementById('set-phone').value);
+            localStorage.setItem('fac_subject', document.getElementById('set-subject').value);
+            loadProfile();
+            showToast("Profile Saved");
+        }
+
+        async function backupData() {
+            const profile = {
+                name: localStorage.getItem('fac_name'),
+                phone: localStorage.getItem('fac_id'),
+                subject: localStorage.getItem('fac_subject')
+            };
+
+            const data = {
+                classes: await getAll('classes'),
+                students: await getAll('students'),
+                attendance: await getAll('attendance'),
+                profile: profile
+            };
+            downloadFile(JSON.stringify(data), 'Backup.json', 'application/json');
+        }
+
+        // --- ANDROID BRIDGE FUNCTIONS ---
+
+        // 1. Trigger File Picker (Replaces old file input click)
+        function triggerRestore() {
+            if (window.Android && window.Android.openFilePicker) {
+                window.Android.openFilePicker(); // Call Java
+            } else {
+                document.getElementById('restore-file').click(); // Fallback for PC
+            }
+        }
+
+        // 2. Called by Android Java when file is picked
+        function androidRestore(jsonContent) {
+            try {
+                const data = JSON.parse(jsonContent);
+                restoreProcess(data);
+            } catch (err) { console.error(err); showToast("Restore Failed: Invalid JSON"); }
+        }
+
+        // 3. Shared Restore Logic
+        function restoreData(input) {
+            const f = input.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    restoreProcess(data);
+                } catch (err) { console.error(err); showToast("Restore Failed"); }
+            };
+            reader.readAsText(f);
+        }
+        // --- ANDROID BACK HANDLER ---
+        // --- IMPROVED BACK LOGIC ---
+        function handleBackPress() {
+            // 1. Sabse pehle check karo: Kya koi Modal khula hai?
+            // 'open' class check karte hain
+            const openModals = document.querySelectorAll('.modal-overlay.open');
+            if (openModals.length > 0) {
+                // Jo sabse upar wala modal hai usay band karo
+                closeModal(openModals[openModals.length - 1].id);
+                return; // Yahi ruk jao, app band mat karna
+            }
+
+            // 2. Check karo: Kya hum Attendance page par hain?
+            const attPage = document.getElementById('page-attendance');
+            if (attPage.classList.contains('active')) {
+                nav('page-home'); // Home pe wapas jao
+                return;
+            }
+
+            // 3. Check karo: Kya hum Manage page par hain?
+            const managePage = document.getElementById('page-manage');
+            if (managePage.classList.contains('active')) {
+                nav('page-home');
+                return;
+            }
+
+            // 4. Check karo: Kya hum Export ya Settings page par hain?
+            const exportPage = document.getElementById('page-export');
+            const settingsPage = document.getElementById('page-settings');
+            if (exportPage.classList.contains('active') || settingsPage.classList.contains('active')) {
+                nav('page-home');
+                return;
+            }
+
+            // 5. Agar upar ka kuch nahi hua, iska matlab hum HOME par hain.
+            // Ab App Exit/Minimize karo.
+
+            if (window.Android && window.Android.exitApp) {
+                window.Android.exitApp();
+            }
+        }
+
+        function restoreProcess(data) {
+            if (!db) { showToast("DB Not Ready"); return; }
+            const tx = db.transaction(['classes', 'students', 'attendance'], 'readwrite');
+            tx.objectStore('classes').clear();
+            tx.objectStore('students').clear();
+            tx.objectStore('attendance').clear();
+
+            if (data.classes) data.classes.forEach(x => tx.objectStore('classes').add(x));
+            if (data.students) data.students.forEach(x => tx.objectStore('students').add(x));
+            if (data.attendance) data.attendance.forEach(x => tx.objectStore('attendance').add(x));
+
+            // Restore Profile
+            if (data.profile) {
+                if (data.profile.name) localStorage.setItem('fac_name', data.profile.name);
+                if (data.profile.phone) localStorage.setItem('fac_id', data.profile.phone);
+                if (data.profile.subject) localStorage.setItem('fac_subject', data.profile.subject);
+            }
+
+            tx.oncomplete = () => window.location.reload();
+        }
+
+        function wipeData() { if (confirm("RESET EVERYTHING?")) { indexedDB.deleteDatabase('FacultyUltimateDB'); localStorage.clear(); location.reload(); } }
+        function getAll(st) { return new Promise(r => { db.transaction(st, 'readonly').objectStore(st).getAll().onsuccess = e => r(e.target.result); }); }
+
+        // 4. Smart Download Function
+        function downloadFile(content, name, type) {
+            if (window.Android && window.Android.shareFile) {
+                // Ab "Save" nahi, "Share" hoga (Share sheet khulegi)
+                window.Android.shareFile(content, name, type);
+            } else {
+                // PC Fallback
+                const blob = new Blob([content], { type });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = name;
+                a.click();
+            }
+        }
+
+        // --- MODAL UTILS ---
+        function openModal(id) {
+            if (id === 'modal-add-class') {
+                document.getElementById('modal-class-title').innerText = "Create New Class";
+                document.getElementById('edit-class-id').value = "";
+                document.getElementById('new-class-name').value = "";
+                document.getElementById('new-class-time').value = "";
+            }
+            const m = document.getElementById(id);
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            setTimeout(() => { m.classList.add('open'); }, 10);
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('open');
+            setTimeout(() => { m.classList.add('hidden'); m.classList.remove('flex'); }, 300);
+        }
+        function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.remove('opacity-0', 'translate-y-[-20px]'); setTimeout(() => t.classList.add('opacity-0', 'translate-y-[-20px]'), 3000); }
+    </script>
+</body>
+
+</html>
