@@ -15,7 +15,7 @@ FacultyPro is a smart, offline-first Android application designed specifically f
 
 ## 🚀 How to Install
 
-1. **Download the APK:** Get the `FacultyPro.apk` file.
+1. **Download the APK:** Go to the [Releases Page](https://github.com/Zubair-cloud/FacultyPro/releases) and download the latest `app-debug.apk`.
 2. **Install:** Tap on the file to install.
    - _Note:_ If prompted, allow "Install from Unknown Sources" (since this is a private student project, not on the Play Store).
 3. **Open:** Launch the app and you are ready to go!
