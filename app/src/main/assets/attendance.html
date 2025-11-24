@@ -6,13 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Faculty Pro - v24</title>
 
-    <script src="libs/tailwindcss.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-    <link href="css/lexend.css" rel="stylesheet" />
-    <link href="css/material-symbols.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
 
-    <script src="libs/jspdf.umd.min.js"></script>
-    <script src="libs/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <script id="tailwind-config">
         try {
@@ -231,7 +233,15 @@
                         class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
-                <div class="grid grid-cols-1 gap-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col items-center justify-center gap-2 rounded-xl glass-card p-4 text-center cursor-pointer hover:bg-white/5 transition"
+                        onclick="triggerEditClassDetails()">
+                        <div
+                            class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-[#2E5BFF]">
+                            <span class="material-symbols-outlined text-3xl">edit_document</span>
+                        </div>
+                        <p class="text-sm font-semibold text-white">Edit Details</p>
+                    </div>
                     <div class="flex flex-col items-center justify-center gap-2 rounded-xl glass-card p-4 text-center cursor-pointer hover:bg-white/5 transition"
                         onclick="triggerEditTimings()">
                         <div
@@ -990,7 +1000,7 @@
                     } else {
                         const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text("Attendance Report", 14, 10); const rows = [];
                         logs.forEach(l => { Object.entries(l.records).forEach(([sid, stat]) => { const s = sMap[sid] || { name: 'Unknown', regNo: '-' }; rows.push([l.date, s.name, s.regNo, stat]); }); });
-                        doc.autoTable({ head: [['Date', 'Name', 'Reg', 'Status']], body: rows }); const pdfOutput = doc.output(); downloadFile(pdfOutput, 'Report.pdf', 'application/pdf');
+                        doc.autoTable({ head: [['Date', 'Name', 'Reg', 'Status']], body: rows }); const pdfOutput = doc.output(); downloadFile(pdfOutput,  'Report.pdf', 'application/pdf');
                     }
                     showToast("Export Downloaded");
                 };
@@ -1136,7 +1146,7 @@
         function downloadFile(content, name, type) {
             if (window.Android && window.Android.shareFile) {
                 // Ab "Save" nahi, "Share" hoga (Share sheet khulegi)
-                window.Android.shareFile(content, name, type);
+                let base64Content; if (type === 'application/pdf') { base64Content = btoa(content); } else { base64Content = btoa(unescape(encodeURIComponent(content))); } window.Android.shareFile(base64Content, name, type);
             } else {
                 // PC Fallback
                 const blob = new Blob([content], { type });
@@ -1170,3 +1180,4 @@
 </body>
 
 </html>
+
