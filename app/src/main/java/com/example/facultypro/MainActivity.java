@@ -23,6 +23,14 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.ContentValues;
+import android.os.Build;
+import android.os.Environment;
+import android.provider.MediaStore;
+import androidx.core.app.NotificationCompat;
+
 public class MainActivity extends AppCompatActivity {
 
     private WebView myWebView;
@@ -127,6 +135,65 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Toast.makeText(mContext, "Error Sharing: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
+        }
+
+        @JavascriptInterface
+        public void saveToDownloads(String content, String fileName, String mimeType) {
+            try {
+                // If content is Base64 (for PDF), decode it. If JSON string, use as is.
+                byte[] fileBytes;
+                if (mimeType.equals("application/pdf")) {
+                    fileBytes = android.util.Base64.decode(content, android.util.Base64.DEFAULT);
+                } else {
+                    fileBytes = content.getBytes();
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+                    values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
+                    values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+                    Uri uri = mContext.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+                    if (uri != null) {
+                        try (java.io.OutputStream out = mContext.getContentResolver().openOutputStream(uri)) {
+                            out.write(fileBytes);
+                        }
+                        showNotification(fileName);
+                        Toast.makeText(mContext, "Saved to Downloads", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                    File file = new File(path, fileName);
+                    FileOutputStream fos = new FileOutputStream(file);
+                    fos.write(fileBytes);
+                    fos.close();
+                    showNotification(fileName);
+                    Toast.makeText(mContext, "Saved to Downloads", Toast.LENGTH_SHORT).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(mContext, "Download Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }
+
+        private void showNotification(String fileName) {
+            String channelId = "download_channel";
+            NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(channelId, "Downloads",
+                        NotificationManager.IMPORTANCE_LOW);
+                manager.createNotificationChannel(channel);
+            }
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, channelId)
+                    .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                    .setContentTitle("Download Complete")
+                    .setContentText(fileName + " has been saved.")
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setAutoCancel(true);
+
+            manager.notify((int) System.currentTimeMillis(), builder.build());
         }
 
         @JavascriptInterface

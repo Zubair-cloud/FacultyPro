@@ -210,6 +210,12 @@
                 </div>
                 <div class="size-10"></div>
             </div>
+            <div id="late-entry-timer" class="hidden bg-yellow-500/10 border-b border-yellow-500/20 p-2 text-center">
+                <p class="text-yellow-400 text-sm font-bold flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-lg">timer</span>
+                    Late Entry Closing in: <span id="timer-display" class="font-mono text-lg">15:00</span>
+                </p>
+            </div>
             <div class="p-4 pb-32">
                 <div class="glass-card p-4 rounded-2xl mb-4 flex justify-between items-center">
                     <div>
@@ -233,15 +239,7 @@
                         class="material-symbols-outlined">close</span></button>
             </div>
             <div class="p-6 space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col items-center justify-center gap-2 rounded-xl glass-card p-4 text-center cursor-pointer hover:bg-white/5 transition"
-                        onclick="triggerEditClassDetails()">
-                        <div
-                            class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20 text-[#2E5BFF]">
-                            <span class="material-symbols-outlined text-3xl">edit_document</span>
-                        </div>
-                        <p class="text-sm font-semibold text-white">Edit Details</p>
-                    </div>
+                <div class="max-w-sm">
                     <div class="flex flex-col items-center justify-center gap-2 rounded-xl glass-card p-4 text-center cursor-pointer hover:bg-white/5 transition"
                         onclick="triggerEditTimings()">
                         <div
@@ -599,6 +597,7 @@
         let db; let classes = []; let activeClass = null; let tempAttendance = {}; let currentStudents = [];
         let activeStudentForDetails = null; let editingDetailIndex = -1;
         let currentAttendanceDate = new Date().toLocaleDateString('en-CA');
+        let lateEntryTimer = null; let lateEntryEndTime = null;
 
         // --- 2. INIT ---
         window.onload = async () => {
@@ -787,8 +786,43 @@
                 const exist = all.find(x => x.date === record.date);
                 if (exist) record.id = exist.id;
                 store.put(record);
-                tx.oncomplete = () => { showToast(mode === 'final' ? "Locked & Saved" : "Saved as Draft"); };
+                tx.oncomplete = () => {
+                    showToast(mode === 'final' ? "Locked & Saved" : "Late Entry Active");
+                    if (mode === 'draft') startLateEntryTimer();
+                    else stopLateEntryTimer();
+                };
             };
+        }
+
+
+        function startLateEntryTimer() {
+            const timerDiv = document.getElementById('late-entry-timer');
+            const display = document.getElementById('timer-display');
+            timerDiv.classList.remove('hidden');
+
+            lateEntryEndTime = Date.now() + 15 * 60 * 1000;
+
+            if (lateEntryTimer) clearInterval(lateEntryTimer);
+            lateEntryTimer = setInterval(() => {
+                const now = Date.now();
+                const diff = lateEntryEndTime - now;
+
+                if (diff <= 0) {
+                    clearInterval(lateEntryTimer);
+                    timerDiv.classList.add('hidden');
+                    saveAttendance('final');
+                    showToast("Late Entry Closed");
+                } else {
+                    const m = Math.floor(diff / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function stopLateEntryTimer() {
+            if (lateEntryTimer) clearInterval(lateEntryTimer);
+            document.getElementById('late-entry-timer').classList.add('hidden');
         }
 
         function getLog(cid, date) { return new Promise(r => { const tx = db.transaction('attendance', 'readonly'); const idx = tx.objectStore('attendance').index('classId'); idx.getAll(cid).onsuccess = e => { r(e.target.result.find(l => l.date === date)); }; }); }
@@ -986,21 +1020,63 @@
         function loadExportClasses() { const sel = document.getElementById('export-class'); sel.innerHTML = ''; classes.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.text = c.name; sel.add(opt); }); }
 
         function generateReport(type) {
-            const cid = parseInt(document.getElementById('export-class').value); const start = new Date(document.getElementById('export-start').value); const end = new Date(document.getElementById('export-end').value);
-            const tx = db.transaction('attendance', 'readonly'); const idx = tx.objectStore('attendance').index('classId');
+            const cid = parseInt(document.getElementById('export-class').value);
+            const start = new Date(document.getElementById('export-start').value);
+            const end = new Date(document.getElementById('export-end').value);
+
+            const tx = db.transaction('attendance', 'readonly');
+            const idx = tx.objectStore('attendance').index('classId');
             idx.getAll(cid).onsuccess = async e => {
                 let logs = e.target.result.filter(l => { const d = new Date(l.date); return d >= start && d <= end; });
+                logs.sort((a, b) => new Date(a.date) - new Date(b.date));
                 if (logs.length === 0) return showToast("No records found");
-                const sTx = db.transaction('students', 'readonly'); const sIdx = sTx.objectStore('students').index('classId');
+
+                const sTx = db.transaction('students', 'readonly');
+                const sIdx = sTx.objectStore('students').index('classId');
                 sIdx.getAll(cid).onsuccess = ev => {
-                    const students = ev.target.result; const sMap = {}; students.forEach(s => sMap[s.id] = s);
+                    const students = ev.target.result;
+                    students.sort((a, b) => a.regNo.localeCompare(b.regNo, undefined, { numeric: true }));
+
                     if (type === 'csv') {
-                        let csv = "Date,Name,RegNo,Status\n"; logs.forEach(l => { Object.entries(l.records).forEach(([sid, stat]) => { const s = sMap[sid] || { name: 'Unknown', regNo: '-' }; csv += `${l.date},${s.name},${s.regNo},${stat}\n`; }); });
+                        let csv = "Register Number,Name";
+                        logs.forEach(l => { csv += `,${l.date}`; });
+                        csv += "\n";
+
+                        students.forEach(s => {
+                            csv += `${s.regNo},${s.name}`;
+                            logs.forEach(l => {
+                                const status = l.records[s.id] || '-';
+                                csv += `,${status}`;
+                            });
+                            csv += "\n";
+                        });
                         downloadFile(csv, 'Report.csv', 'text/csv');
                     } else {
-                        const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.text("Attendance Report", 14, 10); const rows = [];
-                        logs.forEach(l => { Object.entries(l.records).forEach(([sid, stat]) => { const s = sMap[sid] || { name: 'Unknown', regNo: '-' }; rows.push([l.date, s.name, s.regNo, stat]); }); });
-                        doc.autoTable({ head: [['Date', 'Name', 'Reg', 'Status']], body: rows }); const pdfOutput = doc.output(); downloadFile(pdfOutput,  'Report.pdf', 'application/pdf');
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF('l', 'mm', 'a4');
+                        doc.text("Attendance Report", 14, 10);
+
+                        const headers = ['Reg No', 'Name'];
+                        logs.forEach(l => { headers.push(l.date); });
+
+                        const rows = [];
+                        students.forEach(s => {
+                            const row = [s.regNo, s.name];
+                            logs.forEach(l => {
+                                const status = l.records[s.id] || '-';
+                                row.push(status);
+                            });
+                            rows.push(row);
+                        });
+
+                        doc.autoTable({
+                            head: [headers],
+                            body: rows,
+                            styles: { fontSize: 8 }
+                        });
+
+                        const pdfBase64 = btoa(doc.output());
+                        downloadFile(pdfBase64, 'Report.pdf', 'application/pdf');
                     }
                     showToast("Export Downloaded");
                 };
@@ -1144,11 +1220,11 @@
 
         // 4. Smart Download Function
         function downloadFile(content, name, type) {
-            if (window.Android && window.Android.shareFile) {
-                // Ab "Save" nahi, "Share" hoga (Share sheet khulegi)
-                let base64Content; if (type === 'application/pdf') { base64Content = btoa(content); } else { base64Content = btoa(unescape(encodeURIComponent(content))); } window.Android.shareFile(base64Content, name, type);
+            if (window.Android && window.Android.saveToDownloads) {
+                window.Android.saveToDownloads(content, name, type);
+            } else if (window.Android && window.Android.shareFile) {
+                window.Android.shareFile(content, name, type);
             } else {
-                // PC Fallback
                 const blob = new Blob([content], { type });
                 const a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
@@ -1180,4 +1256,3 @@
 </body>
 
 </html>
-
