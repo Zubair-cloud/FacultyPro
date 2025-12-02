@@ -587,6 +587,29 @@
         </div>
     </div>
 
+    <!-- Custom Confirmation Modal -->
+    <div id="modal-confirm" class="modal-overlay fixed inset-0 hidden items-center justify-center z-[70]">
+        <div class="modal-content glass-card rounded-3xl p-8 max-w-sm mx-4 text-center border-2 border-red-500/30">
+            <div class="size-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 mx-auto mb-4">
+                <span class="material-symbols-outlined text-4xl">warning</span>
+            </div>
+            <h3 id="confirm-title" class="text-xl font-bold text-white mb-2">Reset Everything?</h3>
+            <p id="confirm-message" class="text-gray-400 text-sm mb-6">This will permanently delete all classes,
+                students, and attendance records. This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="closeConfirm(false)"
+                    class="flex-1 rounded-xl glass-card py-3 font-bold text-white hover:bg-white/10 transition">
+                    Cancel
+                </button>
+                <button onclick="closeConfirm(true)"
+                    class="flex-1 rounded-xl bg-red-500 py-3 font-bold text-white hover:bg-red-600 transition shadow-lg shadow-red-500/20">
+                    Reset All
+                </button>
+            </div>
+        </div>
+    </div>
+
+
     <div id="toast"
         class="fixed top-6 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-3 rounded-full bg-white/10 backdrop-blur-md border border-white/10 px-5 py-3 text-sm font-semibold text-white shadow-xl opacity-0 pointer-events-none transition-all transform translate-y-[-20px]">
         <span class="material-symbols-outlined text-green-400">check_circle</span><span id="toast-msg">Success</span>
@@ -1215,7 +1238,36 @@
             tx.oncomplete = () => window.location.reload();
         }
 
-        function wipeData() { if (confirm("RESET EVERYTHING?")) { indexedDB.deleteDatabase('FacultyUltimateDB'); localStorage.clear(); location.reload(); } }
+
+        let confirmCallback = null;
+
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            confirmCallback = callback;
+            openModal('modal-confirm');
+        }
+
+        function closeConfirm(confirmed) {
+            closeModal('modal-confirm');
+            if (confirmCallback) {
+                if (confirmed) confirmCallback();
+                confirmCallback = null;
+            }
+        }
+
+        function wipeData() {
+            showConfirm(
+                "Reset Everything?",
+                "This will permanently delete all classes, students, and attendance records. This action cannot be undone.",
+                () => {
+                    indexedDB.deleteDatabase('FacultyUltimateDB');
+                    localStorage.clear();
+                    location.reload();
+                }
+            );
+        }
+
         function getAll(st) { return new Promise(r => { db.transaction(st, 'readonly').objectStore(st).getAll().onsuccess = e => r(e.target.result); }); }
 
         // 4. Smart Download Function
