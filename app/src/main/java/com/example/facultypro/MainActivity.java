@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        myWebView.loadUrl("file:///android_asset/attendance.html");
+        myWebView.loadUrl("file:///android_asset/index_modular.html");
     }
 
     public class WebAppInterface {
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 WebStorage.getInstance().deleteAllData();
                 Toast.makeText(mContext, "App data has been reset.", Toast.LENGTH_SHORT).show();
                 // Reload the page to apply changes
-                myWebView.loadUrl("file:///android_asset/attendance.html");
+                myWebView.loadUrl("file:///android_asset/index_modular.html");
             });
         }
 
