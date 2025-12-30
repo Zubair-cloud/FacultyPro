@@ -209,7 +209,29 @@
                     <input type="date" id="att-date-input" onchange="onDateChange(this)">
                 </div>
                 <div class="size-10"></div>
+            </div> <!-- Previous/Next Day Navigation (for History Mode) -->
+            <div id="history-nav-buttons"
+                class="hidden bg-white/5 border-b border-white/5 p-2 flex items-center justify-center gap-3">
+                <button onclick="navigatePrevDay()"
+                    class="flex items-center gap-1 px-3 py-2 rounded-lg glass-card text-white hover:bg-white/10 transition">
+                    <span class="material-symbols-outlined text-lg">chevron_left</span>
+                    <span class="text-sm font-medium">Previous Day</span>
+                </button>
+                <button onclick="navigateNextDay()"
+                    class="flex items-center gap-1 px-3 py-2 rounded-lg glass-card text-white hover:bg-white/10 transition">
+                    <span class="text-sm font-medium">Next Day</span>
+                    <span class="material-symbols-outlined text-lg">chevron_right</span>
+                </button>
             </div>
+            <!-- Mode Indicator Banner -->
+            <div id="mode-banner"
+                class="hidden bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-b border-blue-500/20 p-3 text-center">
+                <p class="text-white text-sm font-bold flex items-center justify-center gap-2">
+                    <span id="mode-icon" class="material-symbols-outlined text-lg"></span>
+                    <span id="mode-text"></span>
+                </p>
+            </div>
+
             <div id="late-entry-timer" class="hidden bg-yellow-500/10 border-b border-yellow-500/20 p-2 text-center">
                 <p class="text-yellow-400 text-sm font-bold flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-lg">timer</span>
@@ -261,7 +283,7 @@
                         <input type="date" id="hist-date-input"
                             class="w-full rounded-lg border-none bg-black/20 px-4 py-3 text-sm text-white focus:ring-2 focus:ring-[#2E5BFF]">
                     </div>
-                    <button onclick="goToHistory('view')"
+                    <button onclick="goToHistoryView()"
                         class="mt-4 w-full rounded-lg glass-card py-3 font-bold text-white hover:bg-white/10 transition">View
                         Record</button>
                 </div>
@@ -277,7 +299,7 @@
                         <input type="date" id="backlog-date-input"
                             class="w-full rounded-lg border-none bg-black/20 px-4 py-3 text-sm text-white focus:ring-2 focus:ring-[#2E5BFF]">
                     </div>
-                    <button onclick="goToHistory('add')"
+                    <button onclick="goToBacklogAdd()"
                         class="mt-4 w-full flex items-center justify-center gap-2 rounded-lg bg-[#2E5BFF] px-4 py-3 text-base font-bold text-white shadow-lg shadow-[#2E5BFF]/20 transition active:scale-95"><span
                             class="material-symbols-outlined">add_task</span> Add Attendance</button>
                 </div>
@@ -618,6 +640,7 @@
     <script>
         // --- 1. STATE ---
         let db; let classes = []; let activeClass = null; let tempAttendance = {}; let currentStudents = [];
+        let viewMode = 'normal'; // 'normal', 'history', 'backlog'
         let activeStudentForDetails = null; let editingDetailIndex = -1;
         let currentAttendanceDate = new Date().toLocaleDateString('en-CA');
         let lateEntryTimer = null; let lateEntryEndTime = null;
@@ -643,8 +666,17 @@
 
             const bottomNav = document.getElementById('bottom-nav');
             const attDock = document.getElementById('attendance-dock');
-            if (pageId === 'page-attendance') { bottomNav.style.transform = 'translateY(100%)'; attDock.style.transform = 'translateY(0)'; }
-            else { bottomNav.style.transform = 'translateY(0)'; attDock.style.transform = 'translateY(100%)'; }
+            if (pageId === 'page-attendance') {
+                bottomNav.style.transform = 'translateY(100%)';
+                // Don't set attDock here - let updateModeBanner() handle it
+            }
+            else {
+                // Reset viewMode when leaving attendance page
+                viewMode = 'normal';
+                updateModeBanner();
+                bottomNav.style.transform = 'translateY(0)';
+                attDock.style.transform = 'translateY(100%)';
+            }
             if (pageId === 'page-settings') bottomNav.style.transform = 'translateY(100%)';
         }
 
@@ -732,7 +764,7 @@
 
         // --- 6. ATTENDANCE LOGIC ---
         async function openAttendance(cls) {
-            activeClass = cls; nav('page-attendance');
+            activeClass = cls; viewMode = 'normal'; updateModeBanner(); nav('page-attendance');
             document.getElementById('att-title').innerText = cls.name;
             const today = new Date().toLocaleDateString('en-CA');
             document.getElementById('att-date-input').value = today;
@@ -766,21 +798,52 @@
         function renderAttendanceList(savedRecords, isLocked) {
             const list = document.getElementById('att-student-list');
             list.innerHTML = ''; tempAttendance = {};
-            if (currentStudents.length === 0) { list.innerHTML = `<div class="text-center text-gray-500 py-10 col-span-full">No students found.</div>`; return; }
+
+            // Check if in history mode with no records
+            if (viewMode === 'history' && !savedRecords) {
+                list.innerHTML = `<div class="col-span-full text-center py-16">
+                    <div class="glass-card p-8 rounded-2xl max-w-md mx-auto">
+                        <span class="material-symbols-outlined text-6xl text-gray-600 mb-4 block">event_busy</span>
+                        <p class="text-white text-lg font-bold mb-2">No Attendance Recorded</p>
+                        <p class="text-gray-400 text-sm">Attendance was not taken for this date. Use the Backlog feature to add it.</p>
+                    </div>
+                </div>`;
+                return;
+            }
+
+            if (currentStudents.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-500 py-10 col-span-full">No students found.</div>`;
+                return;
+            }
+
             currentStudents.forEach(s => {
                 let status = 'Present';
                 if (savedRecords && savedRecords[s.id]) status = savedRecords[s.id];
                 tempAttendance[s.id] = status;
                 const div = document.createElement('div');
                 div.className = 'glass-card p-3 rounded-xl flex justify-between items-center transition-all duration-300';
-                const btnClass = status === 'Present' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
-                div.innerHTML = `<div class="flex items-center gap-3"><div class="size-10 rounded-full bg-white/5 flex items-center justify-center text-gray-300 font-bold text-sm border border-white/10">${s.regNo.slice(-2)}</div><div><p class="text-white font-semibold text-sm">${s.name}</p><p class="text-xs text-gray-500">${s.regNo}</p></div></div><button id="btn-${s.id}" onclick="toggleStd(${s.id}, ${isLocked})" class="h-10 px-4 rounded-lg border font-bold text-sm transition-all duration-300 ${btnClass}">${status === 'Present' ? 'PRESENT' : 'ABSENT'}</button>`;
+
+                // Determine button styling based on viewMode
+                let btnClass = status === 'Present' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-red-500/20 text-red-400 border-red-500/30';
+                let btnDisabled = '';
+                let btnCursor = '';
+
+                if (viewMode === 'history') {
+                    btnClass += ' opacity-60 cursor-not-allowed';
+                    btnDisabled = 'disabled';
+                    btnCursor = 'style="pointer-events: none;"';
+                }
+
+                div.innerHTML = `<div class="flex items-center gap-3"><div class="size-10 rounded-full bg-white/5 flex items-center justify-center text-gray-300 font-bold text-sm border border-white/10">${s.regNo.slice(-2)}</div><div><p class="text-white font-semibold text-sm">${s.name}</p><p class="text-xs text-gray-500">${s.regNo}</p></div></div><button id="btn-${s.id}" onclick="toggleStd(${s.id}, ${isLocked})" class="h-10 px-4 rounded-lg border font-bold text-sm transition-all duration-300 ${btnClass}" ${btnDisabled} ${btnCursor}>${status === 'Present' ? 'PRESENT' : 'ABSENT'}</button>`;
                 list.appendChild(div);
             });
         }
 
         function toggleStd(id, locked) {
+            // Prevent any changes in history mode
+            if (viewMode === 'history') return showToast("History is Read-Only");
             if (locked) return showToast("Attendance Locked");
+
             const curr = tempAttendance[id];
             const next = curr === 'Present' ? 'Absent' : 'Present';
             tempAttendance[id] = next;
@@ -799,6 +862,11 @@
         }
 
         function saveAttendance(mode) {
+            // Prevent saving in history mode
+            if (viewMode === 'history') {
+                return showToast("Cannot save in history view");
+            }
+
             if (!activeClass) return;
             const record = { classId: activeClass.id, date: currentAttendanceDate, timestamp: Date.now(), status: mode, records: tempAttendance };
             const tx = db.transaction('attendance', 'readwrite');
@@ -811,8 +879,16 @@
                 store.put(record);
                 tx.oncomplete = () => {
                     showToast(mode === 'final' ? "Locked & Saved" : "Late Entry Active");
-                    if (mode === 'draft') startLateEntryTimer();
-                    else stopLateEntryTimer();
+
+                    // Only start late entry timer if:
+                    // 1. Mode is draft
+                    // 2. Date is today (not a historical date)
+                    const today = new Date().toLocaleDateString('en-CA');
+                    if (mode === 'draft' && currentAttendanceDate === today) {
+                        startLateEntryTimer();
+                    } else {
+                        stopLateEntryTimer();
+                    }
                 };
             };
         }
@@ -916,6 +992,92 @@
             currentAttendanceDate = date;
             loadAttendanceForDate(date);
         }
+
+        function goToHistoryView() {
+            const clsId = parseInt(document.getElementById('hist-class-select').value);
+            const date = document.getElementById('hist-date-input').value;
+            if (!clsId) return showToast("Select a Class");
+            if (!date) return showToast("Select a Date");
+
+            const cls = classes.find(c => c.id === clsId);
+            activeClass = cls;
+            viewMode = 'history';
+            updateModeBanner(); // Set to read-only history mode
+            nav('page-attendance');
+            document.getElementById('att-title').innerText = cls.name;
+            const dateObj = new Date(date);
+            document.getElementById('att-date-display').innerText = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            currentAttendanceDate = date;
+            loadAttendanceForDate(date);
+        }
+
+        function goToBacklogAdd() {
+            const clsId = parseInt(document.getElementById('backlog-class-select').value);
+            const date = document.getElementById('backlog-date-input').value;
+            if (!clsId) return showToast("Select a Class");
+            if (!date) return showToast("Select a Date");
+
+            const cls = classes.find(c => c.id === clsId);
+            activeClass = cls;
+            viewMode = 'backlog';
+            updateModeBanner(); // Set to backlog entry mode
+            nav('page-attendance');
+            document.getElementById('att-title').innerText = cls.name;
+            const dateObj = new Date(date);
+            document.getElementById('att-date-display').innerText = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            currentAttendanceDate = date;
+            loadAttendanceForDate(date);
+        }
+        function updateModeBanner() {
+            const banner = document.getElementById('mode-banner');
+            const icon = document.getElementById('mode-icon');
+            const text = document.getElementById('mode-text');
+            const navButtons = document.getElementById('history-nav-buttons');
+            const dateInput = document.getElementById('att-date-input');
+            const attDock = document.getElementById('attendance-dock');
+
+            if (viewMode === 'history') {
+                banner.classList.remove('hidden');
+                banner.className = 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-b border-blue-500/20 p-3 text-center';
+                icon.innerText = 'history_edu';
+                text.innerText = 'Viewing History (Read-Only)';
+                navButtons.classList.remove('hidden'); // Show prev/next buttons
+                dateInput.style.display = 'none'; // Hide date picker
+                if (attDock) attDock.style.transform = 'translateY(100%)'; // Hide dock
+            } else if (viewMode === 'backlog') {
+                banner.classList.remove('hidden');
+                banner.className = 'bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-b border-orange-500/20 p-3 text-center';
+                icon.innerText = 'edit_calendar';
+                text.innerText = 'Adding Backlog Attendance';
+                navButtons.classList.add('hidden'); // Hide prev/next buttons
+                dateInput.style.display = 'block'; // Show date picker
+                if (attDock) attDock.style.transform = 'translateY(0)'; // Show dock
+            } else {
+                banner.classList.add('hidden');
+                navButtons.classList.add('hidden'); // Hide prev/next buttons
+                dateInput.style.display = 'block'; // Show date picker
+                if (attDock) attDock.style.transform = 'translateY(0)'; // Show dock
+            }
+        }
+        function navigatePrevDay() {
+            const currentDate = new Date(currentAttendanceDate);
+            currentDate.setDate(currentDate.getDate() - 1);
+            const newDate = currentDate.toLocaleDateString('en-CA');
+            currentAttendanceDate = newDate;
+            document.getElementById('att-date-display').innerText = currentDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            loadAttendanceForDate(newDate);
+        }
+
+        function navigateNextDay() {
+            const currentDate = new Date(currentAttendanceDate);
+            currentDate.setDate(currentDate.getDate() + 1);
+            const newDate = currentDate.toLocaleDateString('en-CA');
+            currentAttendanceDate = newDate;
+            document.getElementById('att-date-display').innerText = currentDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+            loadAttendanceForDate(newDate);
+        }
+
+
 
         function loadManageClasses() {
             const sels = ['manage-class-select', 'hist-class-select', 'backlog-class-select'];
@@ -1306,5 +1468,4 @@
         function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').innerText = msg; t.classList.remove('opacity-0', 'translate-y-[-20px]'); setTimeout(() => t.classList.add('opacity-0', 'translate-y-[-20px]'), 3000); }
     </script>
 </body>
-
 </html>
