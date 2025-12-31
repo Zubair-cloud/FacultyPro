@@ -25,6 +25,16 @@ window.onload = async () => {
         Classes.loadClasses();
     }
 
+    // Initialize Intervention Templates
+    if (window.Intervention) {
+        Intervention.init();
+    }
+
+    // Load Analytics Threshold
+    if (window.Analytics) {
+        Analytics.loadThreshold();
+    }
+
     console.log('✅ FacultyPro ready!');
 };
 
@@ -74,6 +84,9 @@ function saveProfile() {
     const initial = document.getElementById('profile-initial');
     if (initial) {
         initial.innerText = (name || 'F').charAt(0).toUpperCase();
+        initial.style.background = "linear-gradient(to bottom right, #DEBE63, #FFE5B4)";
+        initial.style.webkitBackgroundClip = "text";
+        initial.style.webkitTextFillColor = "transparent";
     }
     
     if (window.UI) UI.showToast('Profile Saved');
