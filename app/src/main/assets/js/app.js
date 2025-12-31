@@ -43,6 +43,19 @@ function loadProfile() {
     if (phoneInput) phoneInput.value = phone;
     if (subjectInput) subjectInput.value = subject;
     if (greeting) greeting.innerText = name || 'Faculty';
+
+    // Update Profile Initials
+    const initial = document.getElementById('profile-initial');
+    if (initial) {
+        initial.innerText = (name || 'F').charAt(0).toUpperCase();
+        
+        // Add Golden Gradient to Text (via inline style or class if safe)
+        // Since we can't easily do text-gradient in inline styles without webkit-background-clip,
+        // we already added a gold color in CSS. Let's ensure it pops.
+        initial.style.background = "linear-gradient(to bottom right, #DEBE63, #FFE5B4)";
+        initial.style.webkitBackgroundClip = "text";
+        initial.style.webkitTextFillColor = "transparent";
+    }
 }
 
 function saveProfile() {
@@ -56,6 +69,12 @@ function saveProfile() {
 
     const greeting = document.getElementById('home-greeting');
     if (greeting) greeting.innerText = name || 'Faculty';
+    
+    // Update Initial Immediately
+    const initial = document.getElementById('profile-initial');
+    if (initial) {
+        initial.innerText = (name || 'F').charAt(0).toUpperCase();
+    }
     
     if (window.UI) UI.showToast('Profile Saved');
 }

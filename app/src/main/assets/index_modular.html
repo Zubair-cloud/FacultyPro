@@ -243,9 +243,10 @@
             </div>
             <div class="p-4 pt-4 flex flex-col gap-6 max-w-2xl mx-auto">
                 <div class="flex items-center gap-4 p-6 rounded-2xl glass-card">
-                    <div
-                        class="size-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
-                        F</div>
+                    <div id="profile-icon-container"
+                        class="size-16 rounded-full bg-[#101010] border border-[#DEBE63]/20 flex items-center justify-center text-2xl font-bold text-[#DEBE63] shadow-[0_0_15px_rgba(222,190,99,0.2)]">
+                        <span id="profile-initial">F</span>
+                    </div>
                     <div class="flex-1 space-y-2">
                         <input id="set-name" placeholder="Faculty Name"
                             class="w-full bg-transparent border-none p-0 text-xl font-bold text-white placeholder-gray-500 focus:ring-0">
@@ -791,6 +792,7 @@
     <!-- 1.1 External Libraries (Offline) -->
     <script src="js/libs/jspdf.min.js"></script>
     <script src="js/libs/html-docx.js"></script>
+    <script src="js/core/dsu_logo.js"></script>
 
     <!-- 2. Database Layer -->
     <script src="js/core/db.js"></script>
