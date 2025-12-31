@@ -13,6 +13,7 @@ const Classes = {
             this.classes = e.target.result;
             window.classes = this.classes; // For backward compatibility
             this.renderHomeList();
+            this.loadManageClasses(); // Populate all dropdowns
         };
     },
 
@@ -114,7 +115,8 @@ const Classes = {
             document.getElementById('manage-class-select'),
             document.getElementById('hist-class-select'),
             document.getElementById('backlog-class-select'),
-            document.getElementById('timing-class-select')
+            document.getElementById('timing-class-select'),
+            document.getElementById('analytics-class-select')
         ];
         
         const tx = db.transaction('classes', 'readonly');

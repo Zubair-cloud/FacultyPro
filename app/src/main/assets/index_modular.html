@@ -24,23 +24,33 @@
 
 <body>
 
-    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-gradient-to-br from-[#101622] to-[#1a1f2c]">
-        <div class="absolute -top-20 -left-20 h-64 w-64 rounded-full bg-[#2E5BFF]/20 blur-3xl"></div>
-        <div class="absolute -bottom-20 -right-20 h-64 w-64 rounded-full bg-[#FF3B30]/20 blur-3xl"></div>
+    <!-- DSU "Golden Neon" Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#030001]">
+        <!-- Golden Glow (Top Left) - Replaces Blue -->
+        <div class="absolute -top-20 -left-20 h-96 w-96 rounded-full bg-[#DEBE63]/20 blur-[100px]"></div>
+        <!-- Maroon Depth (Bottom Right) - Replaces Red -->
+        <div class="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-[#5D250D]/30 blur-[100px]"></div>
     </div>
 
     <div
-        class="relative z-10 h-full w-full md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col bg-[#101622]/50 shadow-2xl border-x border-white/5 backdrop-blur-sm">
+        class="relative z-10 h-full w-full md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col bg-[#030001]/60 shadow-2xl border-x border-[#DEBE63]/10 backdrop-blur-md">
 
         <div id="page-home" class="page active">
             <div class="flex flex-col gap-2 p-6 pb-2">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
+                        <!-- DSU Logo / Icon -->
                         <div
-                            class="size-12 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/20">
-                            F</div>
+                            class="size-14 rounded-full bg-gradient-to-br from-[#DEBE63] to-[#A47F1E] p-0.5 shadow-lg shadow-[#DEBE63]/20">
+                            <div
+                                class="h-full w-full rounded-full bg-[#030001] flex items-center justify-center overflow-hidden">
+                                <!-- Using DSU Logo from Assets -->
+                                <img src="institutions/dsu/logos/dsulogo.png" alt="DSU"
+                                    class="h-full w-full object-cover opacity-90">
+                            </div>
+                        </div>
                         <div>
-                            <p class="text-sm text-gray-400 font-medium">Welcome back,</p>
+                            <p class="text-xs text-gray-400 font-medium">Welcome back,</p>
                             <p id="home-greeting" class="text-xl font-bold text-white leading-tight">Faculty</p>
                         </div>
                     </div>
@@ -285,8 +295,96 @@
                         </div>
                     </button>
                 </div>
+
+                <div class="mt-8 text-center pb-8 opacity-60">
+                    <p class="text-[10px] text-[#DEBE63] font-medium tracking-widest uppercase mb-1">Developed by</p>
+                    <p class="text-xs text-white font-bold tracking-widest uppercase">Zinc Labs</p>
+                    <p class="text-[8px] text-gray-500 mt-1">v24.1.0 • Zinc Edition</p>
+                </div>
             </div>
         </div>
+
+        <!-- ANALYTICS PAGE (ZINC THEME) -->
+        <div id="page-analytics" class="page pb-24">
+            <div class="p-6 flex flex-col gap-6">
+                <!-- Header -->
+                <div>
+                    <h1 class="text-2xl font-bold text-[#DEBE63] drop-shadow-[0_0_15px_rgba(222,190,99,0.5)]">Class
+                        Insights</h1>
+                    <p class="text-gray-400 text-sm">Performance & Trends</p>
+                </div>
+
+                <!-- Class Dropdown -->
+                <div class="glass-card p-4 rounded-xl border border-[#DEBE63]/30">
+                    <label class="block text-xs font-bold text-[#DEBE63] uppercase tracking-widest mb-2">Select
+                        Class</label>
+                    <div class="flex gap-2">
+                        <select id="analytics-class-select" onchange="Analytics.loadClassData()"
+                            class="flex-1 bg-black/50 border border-white/10 text-white text-sm rounded-lg p-3 outline-none focus:border-[#DEBE63] transition-colors">
+                            <option value="">Choose a class...</option>
+                        </select>
+                        <button onclick="Analytics.loadClassData()"
+                            class="bg-[#DEBE63] text-black rounded-lg px-4 flex items-center justify-center shadow-[0_0_15px_rgba(222,190,99,0.4)]">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Chart Area (Neon Graph) -->
+                <div id="analytics-hero" class="hidden flex-col gap-4">
+                    <div class="glass-card p-6 rounded-2xl border border-[#DEBE63]/20 relative overflow-hidden">
+                        <!-- Glow Effect -->
+                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#DEBE63]/20 blur-[50px] rounded-full">
+                        </div>
+
+                        <div class="relative z-10">
+                            <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Class Average</p>
+                            <div class="flex items-end gap-2 mt-1">
+                                <h2 id="analytics-avg-percent" class="text-4xl font-bold text-white">0%</h2>
+                                <span class="text-xs text-green-400 mb-2 flex items-center">
+                                    <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                    <span>Live</span>
+                                </span>
+                            </div>
+
+                            <!-- Placeholder for SVG Graph -->
+                            <div id="analytics-main-graph" class="h-16 mt-4 w-full flex items-end gap-1 opacity-50">
+                                <!-- Bars will be injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Buckets Tabs -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                        <button onclick="Analytics.switchTab('danger')" id="tab-danger"
+                            class="flex-shrink-0 px-4 py-2 rounded-full border border-red-500/50 bg-red-500/10 text-red-400 text-xs font-bold active-tab-danger">
+                            🚨 Defaulters (<span id="count-danger">0</span>)
+                        </button>
+                        <button onclick="Analytics.switchTab('warning')" id="tab-warning"
+                            class="flex-shrink-0 px-4 py-2 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 text-xs font-bold opacity-50">
+                            ⚠️ At Risk (<span id="count-warning">0</span>)
+                        </button>
+                        <button onclick="Analytics.switchTab('star')" id="tab-star"
+                            class="flex-shrink-0 px-4 py-2 rounded-full border border-[#DEBE63]/30 bg-[#DEBE63]/10 text-[#DEBE63] text-xs font-bold opacity-50">
+                            👑 Stars (<span id="count-star">0</span>)
+                        </button>
+                    </div>
+
+                    <!-- Student List Container -->
+                    <div id="analytics-student-list" class="flex flex-col gap-3 min-h-[200px]">
+                        <!-- Students injected here -->
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="analytics-empty" class="text-center py-10 opacity-50">
+                    <span class="material-symbols-outlined text-4xl mb-2">bar_chart</span>
+                    <p class="text-sm">Select a class to view insights</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     </div>
 
@@ -307,6 +405,13 @@
                 <div class="icon-container size-10 rounded-xl flex items-center justify-center transition-colors"><span
                         class="material-symbols-outlined">groups</span></div><span
                     class="text-[10px] font-medium">Manage</span>
+            </button>
+            <button onclick="nav('page-analytics')"
+                class="nav-item flex flex-col items-center gap-1 text-gray-500 transition hover:text-primary"
+                id="nav-analytics">
+                <div class="icon-container size-10 rounded-xl flex items-center justify-center transition-colors"><span
+                        class="material-symbols-outlined">bar_chart</span></div><span
+                    class="text-[10px] font-medium">Insights</span>
             </button>
             <button onclick="nav('page-export')"
                 class="nav-item flex flex-col items-center gap-1 text-gray-500 transition hover:text-primary"
@@ -476,6 +581,85 @@
         </div>
     </div>
 
+    <!-- Analytics: Student Profile Drill-Down -->
+    <div id="modal-analytics-profile"
+        class="modal-overlay fixed inset-0 z-[70] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
+        <div
+            class="modal-content w-full h-[85vh] sm:h-auto sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
+
+            <!-- Header -->
+            <div class="p-6 pb-2 border-b border-white/5">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div id="anl-profile-avatar"
+                            class="size-14 rounded-full bg-gradient-to-br from-[#DEBE63] to-[#5D250D] p-0.5">
+                            <div class="size-full rounded-full bg-black flex items-center justify-center">
+                                <span id="anl-profile-initial" class="text-xl font-bold text-[#DEBE63]">A</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 id="anl-profile-name" class="text-lg font-bold text-white leading-tight">Student Name
+                            </h3>
+                            <p id="anl-profile-reg" class="text-xs text-gray-400 font-mono mt-0.5">REG12345</p>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('modal-analytics-profile')"
+                        class="size-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-white/10 hover:text-white transition">
+                        <span class="material-symbols-outlined text-lg">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="glass-card p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Attendance</p>
+                        <h2 id="anl-profile-percent" class="text-3xl font-bold text-[#DEBE63] mt-1">0%</h2>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl bg-white/5 border border-white/5">
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Sessions</p>
+                        <h2 id="anl-profile-sessions" class="text-xl font-bold text-white mt-2">0/0</h2>
+                    </div>
+                </div>
+
+                <!-- Sparkline Trend Graph -->
+                <div>
+                    <p class="text-xs text-gray-400 font-bold mb-3 uppercase tracking-wider flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm">trending_up</span> Attendance Trend
+                    </p>
+                    <div class="h-24 w-full bg-white/5 rounded-xl border border-white/5 relative overflow-hidden flex items-end px-2 pb-2"
+                        id="anl-sparkline-container">
+                        <!-- SVG Line injected here -->
+                    </div>
+                </div>
+
+                <!-- Recent History List -->
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Recent History</p>
+                        <span class="text-[10px] text-gray-500">Last 10 sessions</span>
+                    </div>
+                    <div id="anl-history-list" class="space-y-2">
+                        <!-- History Items Injected Here -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sticky Action Button -->
+            <div class="p-4 border-t border-white/10 bg-[#101010]/90 backdrop-blur pb-8 sm:pb-4">
+                <button onclick="Analytics.openIntervention()"
+                    class="w-full py-4 rounded-xl bg-[#DEBE63] text-black font-bold text-sm tracking-wide shadow-[0_0_20px_rgba(222,190,99,0.3)] hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">bolt</span>
+                    TAKE ACTION
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Confirmation Modal -->
     <div id="modal-confirm" class="modal-overlay fixed inset-0 hidden items-center justify-center z-[70]">
         <div class="modal-content glass-card rounded-3xl p-8 max-w-sm mx-4 text-center border-2 border-red-500/30">
@@ -522,74 +706,10 @@
     <script src="js/features/attendance.js"></script>
     <script src="js/features/export.js"></script>
     <script src="js/features/backup.js"></script>
+    <script src="js/features/analytics.js"></script>
 
     <!-- 5. App Initialization -->
-    <script>
-        // --- APP INITIALIZATION ---
-        window.onload = async () => {
-            console.log('🚀 FacultyPro Modular - Initializing...');
-
-            // Set default export dates
-            document.getElementById('export-end').valueAsDate = new Date();
-            document.getElementById('export-start').valueAsDate = new Date(new Date().setDate(new Date().getDate() - 30));
-
-            // Initialize database
-            await DB.initDB();
-
-            // Load initial data
-            loadProfile();
-            Classes.loadClasses();
-
-            console.log('✅ FacultyPro ready!');
-        };
-
-        // --- PROFILE FUNCTIONS ---
-        function loadProfile() {
-            const name = localStorage.getItem('facultyName') || '';
-            const phone = localStorage.getItem('facultyPhone') || '';
-            const subject = localStorage.getItem('facultySubject') || '';
-
-            document.getElementById('set-name').value = name;
-            document.getElementById('set-phone').value = phone;
-            document.getElementById('set-subject').value = subject;
-            document.getElementById('home-greeting').innerText = name || 'Faculty';
-        }
-
-        function saveProfile() {
-            const name = document.getElementById('set-name').value;
-            const phone = document.getElementById('set-phone').value;
-            const subject = document.getElementById('set-subject').value;
-
-            localStorage.setItem('facultyName', name);
-            localStorage.setItem('facultyPhone', phone);
-            localStorage.setItem('facultySubject', subject);
-
-            document.getElementById('home-greeting').innerText = name || 'Faculty';
-            UI.showToast('Profile Saved');
-        }
-
-        // --- BACK BUTTON HANDLER ---
-        function handleBackPress() {
-            const activePage = document.querySelector('.page.active');
-            if (!activePage) return;
-
-            const pageId = activePage.id;
-
-            if (pageId === 'page-attendance') {
-                UI.nav('page-home');
-            } else if (pageId === 'page-manage' || pageId === 'page-export' || pageId === 'page-settings') {
-                UI.nav('page-home');
-            } else if (pageId === 'page-home') {
-                // On home page, exit the app
-                if (typeof Android !== 'undefined' && Android.exitApp) {
-                    Android.exitApp();
-                }
-            }
-        }
-        window.handleBackPress = handleBackPress;
-
-        console.log('✅ App initialized with back button handler');
-    </script>
+    <script src="js/app.js"></script>
 
 </body>
 

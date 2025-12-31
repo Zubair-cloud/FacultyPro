@@ -7,12 +7,12 @@ try {
                 theme: {
                     extend: {
                         colors: {
-                            "primary": "#4A90E2",
-                            "primary-dark": "#2E5BFF",
-                            "accent": "#D0021B",
-                            "background-light": "#F4F6F8",
-                            "background-dark": "#101622",
-                            "surface": "rgba(255, 255, 255, 0.05)"
+                            "primary": "#DEBE63",      // Golden (Neon Source)
+                            "primary-dark": "#A47F1E", // Deep Gold
+                            "accent": "#5D250D",       // Dark Brown/Maroon
+                            "background-light": "#FDF1E2",
+                            "background-dark": "#030001", // Near Black
+                            "surface": "rgba(222, 190, 99, 0.08)" // Gold Tint
                         },
                         fontFamily: {
                             "display": ["Lexend", "sans-serif"]
