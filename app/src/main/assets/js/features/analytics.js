@@ -374,7 +374,47 @@ const Analytics = {
     },
 
     openIntervention() {
-        UI.showToast("Intervention Engine (Coming Soon!) ⚡");
+        // Logic to find current student context
+        // Since the 'Take Action' button is in the drill-down modal, 
+        // we need to know WHICH student is currently being viewed.
+        
+        // Strategy: read the name from the DOM or store a currentStudentId variable.
+        // Let's use the DOM regNo to find the student in our data.
+        const regNo = document.getElementById('anl-profile-reg').innerText;
+        const student = this.currentClassStats.students.find(s => s.regNo === regNo);
+
+        if (student) {
+            if (window.Intervention) {
+                Intervention.openActionModal(student);
+            } else {
+                UI.showToast("Intervention module missing!");
+            }
+        } else {
+            UI.showToast("Error: Student not found");
+        }
+    },
+
+    // --- Threshold Management ---
+    updateThreshold(value) {
+        const v = parseInt(value) || 75;
+        localStorage.setItem('appreciation_threshold', v);
+        document.getElementById('threshold-value').innerText = v + '%';
+        UI.showToast(`Threshold set to ${v}%`);
+    },
+
+    loadThreshold() {
+        const stored = localStorage.getItem('appreciation_threshold');
+        const v = stored ? parseInt(stored) : 80;
+        const slider = document.getElementById('threshold-slider');
+        const display = document.getElementById('threshold-value');
+        if (slider) slider.value = v;
+        if (display) display.innerText = v + '%';
+        return v;
+    },
+
+    getThreshold() {
+        const stored = localStorage.getItem('appreciation_threshold');
+        return stored ? parseInt(stored) : 80;
     }
 
 };

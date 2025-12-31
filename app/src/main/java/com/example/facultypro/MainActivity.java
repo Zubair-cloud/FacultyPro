@@ -48,7 +48,30 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
         webSettings.setAllowFileAccess(true);
-        myWebView.setWebViewClient(new WebViewClient());
+        myWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url == null)
+                    return false;
+
+                // Handle WhatsApp, Tel, Mailto, etc.
+                if (url.startsWith("whatsapp:") || url.startsWith("mailto:") || url.startsWith("tel:")
+                        || url.startsWith("intent:")) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        startActivity(intent);
+                        return true; // We handled it
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, "App not found to handle this action", Toast.LENGTH_SHORT)
+                                .show();
+                        return true;
+                    }
+                }
+
+                // Allow normal links to load in WebView
+                return false;
+            }
+        });
         myWebView.setWebChromeClient(new android.webkit.WebChromeClient());
 
         myWebView.addJavascriptInterface(new WebAppInterface(this), "Android");
@@ -109,19 +132,27 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void shareFile(String base64Content, String fileName, String mimeType) {
             try {
+                android.util.Log.d("FacultyPro", "shareFile called for: " + fileName);
+
                 // 1. File ko App ke Cache mein save karo (Temporary)
                 File cachePath = new File(mContext.getCacheDir(), "files");
-                cachePath.mkdirs();
+                if (!cachePath.exists())
+                    cachePath.mkdirs();
+
                 File newFile = new File(cachePath, fileName);
+                android.util.Log.d("FacultyPro", "Saving to: " + newFile.getAbsolutePath());
+
                 FileOutputStream fos = new FileOutputStream(newFile);
 
                 // Decode Base64 string to bytes
                 byte[] fileBytes = android.util.Base64.decode(base64Content, android.util.Base64.DEFAULT);
                 fos.write(fileBytes);
                 fos.close();
+                android.util.Log.d("FacultyPro", "File written successfully. Size: " + newFile.length());
 
                 // 2. FileProvider se URI generate karo (Secure sharing)
                 Uri contentUri = FileProvider.getUriForFile(mContext, mContext.getPackageName() + ".provider", newFile);
+                android.util.Log.d("FacultyPro", "URI generated: " + contentUri.toString());
 
                 // 3. Share Sheet kholo (WhatsApp, Gmail, Drive, etc.)
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -130,9 +161,12 @@ public class MainActivity extends AppCompatActivity {
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
                 Intent chooser = Intent.createChooser(shareIntent, "Share via");
+                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // IMPORTANT for Context call
                 mContext.startActivity(chooser);
+                android.util.Log.d("FacultyPro", "Chooser launched");
 
             } catch (Exception e) {
+                android.util.Log.e("FacultyPro", "Share Error", e);
                 Toast.makeText(mContext, "Error Sharing: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         }

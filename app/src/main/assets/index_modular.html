@@ -293,7 +293,19 @@
                             <p class="text-white font-medium">Reset App</p>
                             <p class="text-gray-400 text-xs">Clear all local data</p>
                         </div>
-                    </button>
+                        <!-- Intervention Templates Button -->
+                        <button onclick="Intervention.openTemplateManager()"
+                            class="flex items-center gap-4 p-4 rounded-2xl glass-card active:bg-white/10 transition hover:bg-white/5 border border-[#DEBE63]/20 mt-4">
+                            <div
+                                class="size-12 rounded-xl bg-[#DEBE63]/20 flex items-center justify-center text-[#DEBE63]">
+                                <span class="material-symbols-outlined">library_books</span>
+                            </div>
+                            <div class="text-left flex-1">
+                                <p class="text-white font-medium">Intervention Templates</p>
+                                <p class="text-gray-400 text-xs">Edit Warning Letters & Messages</p>
+                            </div><span class="material-symbols-outlined text-gray-500">chevron_right</span>
+                        </button>
+
                 </div>
 
                 <div class="mt-8 text-center pb-8 opacity-60">
@@ -327,6 +339,23 @@
                             class="bg-[#DEBE63] text-black rounded-lg px-4 flex items-center justify-center shadow-[0_0_15px_rgba(222,190,99,0.4)]">
                             <span class="material-symbols-outlined">refresh</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Threshold Slider -->
+                <div class="glass-card p-4 rounded-xl border border-white/10">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Low Attendance
+                            Cutoff</label>
+                        <span id="threshold-value" class="text-red-400 font-bold text-sm">80%</span>
+                    </div>
+                    <input type="range" id="threshold-slider" min="50" max="90" value="80" step="5"
+                        oninput="Analytics.updateThreshold(this.value)"
+                        class="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-red-500">
+                    <div class="flex justify-between text-[10px] text-gray-500 mt-1">
+                        <span>🚨 Stricter</span>
+                        <span class="text-center">Below = ⚠️ Warning | Above = 🌟 Appreciation</span>
+                        <span>💚 Relaxed</span>
                     </div>
                 </div>
 
@@ -420,7 +449,7 @@
                         class="material-symbols-outlined">upload_file</span></div><span
                     class="text-[10px] font-medium">Export</span>
             </button>
-            <button onclick="nav('page-settings')"
+            <button onclick="nav('page-settings'); if(window.Intervention) Intervention.loadIntoSettings();"
                 class="nav-item flex flex-col items-center gap-1 text-gray-500 transition hover:text-primary"
                 id="nav-settings">
                 <div class="icon-container size-10 rounded-xl flex items-center justify-center transition-colors"><span
@@ -660,7 +689,72 @@
         </div>
     </div>
 
-    <!-- Custom Confirmation Modal -->
+    <!-- Intervention Modal (Letter Preview) -->
+    <div id="modal-intervention"
+        class="modal-overlay fixed inset-0 z-[80] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
+        <div
+            class="modal-content w-full h-[90vh] sm:h-auto sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
+
+            <!-- Header -->
+            <div class="p-6 pb-2 border-b border-white/5 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Take Action</h3>
+                    <p class="text-xs text-[#DEBE63]">Review Letter</p>
+                </div>
+                <button onclick="closeModal('modal-intervention')"
+                    class="size-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-white/10 hover:text-white transition">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+                <input type="hidden" id="intervention-student-id">
+
+                <!-- Preview Area -->
+                <div class="relative">
+                    <textarea id="intervention-preview"
+                        class="w-full h-64 bg-[#0A0A0A] border border-white/10 rounded-xl p-4 text-sm text-gray-300 font-mono focus:border-[#DEBE63] focus:outline-none resize-none leading-relaxed shadow-inner"
+                        spellcheck="false"></textarea>
+                    <div class="absolute bottom-3 right-3 text-[10px] text-gray-600 pointer-events-none">EDITABLE</div>
+                </div>
+
+                <!-- Template Settings Toggle -->
+                <div class="flex justify-end">
+                    <button onclick="Intervention.saveTemplate(document.getElementById('intervention-preview').value)"
+                        class="text-xs text-[#DEBE63] underline opacity-50 hover:opacity-100 transition">Save as New
+                        Template</button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="p-6 border-t border-white/10 flex flex-col gap-3 bg-[#101010]/90 backdrop-blur">
+                <!-- File Export Options -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="Intervention.sharePDF()"
+                        class="py-3 rounded-xl bg-[#E53935]/10 border border-[#E53935]/50 text-[#E53935] font-bold text-sm hover:bg-[#E53935]/20 transition flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">picture_as_pdf</span>
+                        PDF
+                    </button>
+                    <button onclick="Intervention.shareWord()"
+                        class="py-3 rounded-xl bg-[#2B579A]/10 border border-[#2B579A]/50 text-[#2B579A] font-bold text-sm hover:bg-[#2B579A]/20 transition flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">description</span>
+                        Word
+                    </button>
+                </div>
+
+                <!-- Quick Share -->
+                <button onclick="Intervention.shareWhatsApp()"
+                    class="w-full py-4 rounded-xl bg-[#25D366] text-black font-bold text-sm tracking-wide shadow-[0_0_20px_rgba(37,211,102,0.3)] hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                    </svg>
+                    WhatsApp Text
+                </button>
+            </div>
+        </div>
+    </div>
     <div id="modal-confirm" class="modal-overlay fixed inset-0 hidden items-center justify-center z-[70]">
         <div class="modal-content glass-card rounded-3xl p-8 max-w-sm mx-4 text-center border-2 border-red-500/30">
             <div class="size-16 rounded-full bg-red-500/20 flex items-center justify-center text-red-500 mx-auto mb-4">
@@ -694,6 +788,10 @@
     <!-- 1. Core Configuration -->
     <script src="js/core/config.js"></script>
 
+    <!-- 1.1 External Libraries (Offline) -->
+    <script src="js/libs/jspdf.min.js"></script>
+    <script src="js/libs/html-docx.js"></script>
+
     <!-- 2. Database Layer -->
     <script src="js/core/db.js"></script>
 
@@ -707,9 +805,99 @@
     <script src="js/features/export.js"></script>
     <script src="js/features/backup.js"></script>
     <script src="js/features/analytics.js"></script>
+    <script src="js/features/intervention.js"></script>
 
     <!-- 5. App Initialization -->
     <script src="js/app.js"></script>
+
+    <!-- Template Manager Modal (List) -->
+    <div id="modal-templates-list"
+        class="modal-overlay fixed inset-0 z-[70] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
+        <div
+            class="modal-content w-full h-[80vh] sm:h-[600px] sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-[#DEBE63]/5">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Templates</h3>
+                    <p class="text-xs text-[#DEBE63]">Manage your interventions</p>
+                </div>
+                <button onclick="closeModal('modal-templates-list')"
+                    class="size-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="template-list-container">
+                <!-- Templates injected here -->
+            </div>
+            <div class="p-4 border-t border-white/10 space-y-2">
+                <button onclick="Intervention.createNewTemplate()"
+                    class="w-full py-3 rounded-xl bg-[#DEBE63] text-black font-bold flex items-center justify-center gap-2 hover:bg-[#c5a650]">
+                    <span class="material-symbols-outlined">add</span> Create New Template
+                </button>
+                <button onclick="Intervention.resetToDefaults()"
+                    class="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-bold flex items-center justify-center gap-2 hover:bg-white/10 hover:text-white transition">
+                    <span class="material-symbols-outlined text-sm">restart_alt</span> Reset to Defaults
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template Editor Modal -->
+    <div id="modal-template-editor"
+        class="modal-overlay fixed inset-0 z-[80] hidden items-end sm:items-center justify-center bg-black/90 backdrop-blur-md">
+        <div
+            class="modal-content w-full h-[95vh] sm:h-[700px] sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
+            <!-- Header -->
+            <div class="p-4 border-b border-white/5 flex justify-between items-center">
+                <input id="edit-template-title"
+                    class="bg-transparent border-none text-white font-bold text-lg focus:ring-0 placeholder-gray-500 w-full"
+                    placeholder="Template Name">
+                <button onclick="closeModal('modal-template-editor')" class="text-gray-400 hover:text-white"><span
+                        class="material-symbols-outlined">close</span></button>
+            </div>
+
+            <!-- Toolbar (Chips) -->
+            <div class="p-3 bg-[#151515] border-b border-white/5">
+                <p class="text-[10px] text-gray-500 mb-2 uppercase tracking-wider font-bold">Tap to Insert:</p>
+                <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar" id="template-chips">
+                    <button onclick="Intervention.insertTag('{name}')"
+                        class="px-3 py-1.5 rounded-lg bg-[#2E5BFF]/10 border border-[#2E5BFF]/30 text-[#2E5BFF] text-xs font-bold whitespace-nowrap hover:bg-[#2E5BFF]/20 transition">+
+                        Name</button>
+                    <button onclick="Intervention.insertTag('{regNo}')"
+                        class="px-3 py-1.5 rounded-lg bg-[#2E5BFF]/10 border border-[#2E5BFF]/30 text-[#2E5BFF] text-xs font-bold whitespace-nowrap hover:bg-[#2E5BFF]/20 transition">+
+                        RegNo</button>
+                    <button onclick="Intervention.insertTag('{percentage}')"
+                        class="px-3 py-1.5 rounded-lg bg-[#DEBE63]/10 border border-[#DEBE63]/30 text-[#DEBE63] text-xs font-bold whitespace-nowrap hover:bg-[#DEBE63]/20 transition">+
+                        %</button>
+                    <button onclick="Intervention.insertTag('{subject}')"
+                        class="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-500 text-xs font-bold whitespace-nowrap hover:bg-green-500/20 transition">+
+                        Subject</button>
+                    <button onclick="Intervention.insertTag('{present}')"
+                        class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 text-xs font-bold whitespace-nowrap hover:bg-white/10 transition">+
+                        Attended</button>
+                    <button onclick="Intervention.insertTag('{total}')"
+                        class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 text-xs font-bold whitespace-nowrap hover:bg-white/10 transition">+
+                        Total</button>
+                </div>
+            </div>
+
+            <!-- Editor -->
+            <div class="flex-1 p-4 bg-[#0A0A0A]">
+                <textarea id="edit-template-body"
+                    class="w-full h-full bg-transparent border-none text-gray-300 font-mono text-sm focus:ring-0 resize-none leading-relaxed p-0"
+                    placeholder="Type your letter here..."></textarea>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-white/10 bg-[#151515] flex gap-3">
+                <button onclick="Intervention.deleteTemplate()"
+                    class="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20"><span
+                        class="material-symbols-outlined">delete</span></button>
+                <button onclick="Intervention.saveEditorContent()"
+                    class="flex-1 py-3 rounded-xl bg-[#DEBE63] text-black font-bold hover:bg-[#c5a650] shadow-lg shadow-[#DEBE63]/10">Save
+                    Template</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 
