@@ -65,70 +65,115 @@ const Export = {
     // Generate PDF report
     generatePDF(cls, students, records, startDate, endDate) {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        const doc = new jsPDF('l', 'mm', 'a4'); // Landscape for better width
+
+        // 1. Prepare Data
+        // Sort records by date
+        records.sort((a, b) => new Date(a.date) - new Date(b.date));
         
-        doc.setFontSize(18);
-        doc.text(`Attendance Report - ${cls.name}`, 14, 20);
+        // Extract unique dates for columns
+        const dates = records.map(r => r.date);
+
+        if (dates.length === 0) {
+            UI.showToast("No attendance data in range");
+            return;
+        }
+
+        const dateChunkSize = 7; // Max dates per page
         
-        doc.setFontSize(12);
-        doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
-        
-        const tableData = students.map(s => {
-            let present = 0, absent = 0;
-            records.forEach(r => {
-                if (r.records && r.records[s.id]) {
-                    r.records[s.id] === 'Present' ? present++ : absent++;
+        // Loop through chunks of dates
+        for (let i = 0; i < dates.length; i += dateChunkSize) {
+            if (i > 0) doc.addPage(); // New page for next chunk
+
+            const currentDates = dates.slice(i, i + dateChunkSize);
+            
+            // Header
+            doc.setFontSize(14);
+            doc.text(`Attendance Report - ${cls.name}`, 14, 15);
+            doc.setFontSize(10);
+            const pageNum = Math.floor(i / dateChunkSize) + 1;
+            const totalPages = Math.ceil(dates.length / dateChunkSize);
+            doc.text(`Page ${pageNum} of ${totalPages} (Dates: ${currentDates[0]} to ${currentDates[currentDates.length-1]})`, 14, 22);
+
+            // Table Headers
+            // Formatted dates for header (e.g., "Dec 31")
+            const dateHeaders = currentDates.map(d => {
+                const doer = new Date(d);
+                return `${doer.getDate()}/${doer.getMonth()+1}`;
+            });
+            const head = [['Reg No', 'Name', ...dateHeaders]];
+
+            // Table Body
+            const body = students.map(s => {
+                const row = [s.regNo, s.name];
+                currentDates.forEach(date => {
+                    // Find record for this date
+                    const record = records.find(r => r.date === date);
+                    const status = record && record.records && record.records[s.id] ? record.records[s.id] : '-';
+                    // Simplify status for space (P/A)
+                    row.push(status.charAt(0)); 
+                });
+                return row;
+            });
+
+            doc.autoTable({
+                head: head,
+                body: body,
+                startY: 25,
+                styles: { fontSize: 10, cellPadding: 2 },
+                headStyles: { fillColor: [22, 163, 74] }, // Green header
+                columnStyles: {
+                    0: { cellWidth: 30, fontStyle: 'bold' }, // Reg No
+                    1: { cellWidth: 50, fontStyle: 'bold' }  // Name
+                    // Remaining columns will auto-size
                 }
             });
-            const total = present + absent;
-            const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : '0';
-            
-            return [s.regNo, s.name, present.toString(), absent.toString(), `${percentage}%`];
-        });
+        }
         
-        doc.autoTable({
-            head: [['Reg No', 'Name', 'Present', 'Absent', 'Percentage']],
-            body: tableData,
-            startY: 40
-        });
+        const fileName = `${cls.name}_Report.pdf`;
         
-        const fileName = `${cls.name}_Attendance_${startDate}_to_${endDate}.pdf`;
-        
-        // Use Android native method if available
+        // Save
         if (typeof Android !== 'undefined' && Android.saveToDownloads) {
             const pdfBase64 = doc.output('datauristring').split(',')[1];
             Android.saveToDownloads(pdfBase64, fileName, 'application/pdf');
         } else {
-            doc.save(fileName); // Browser fallback
+            doc.save(fileName);
         }
-        
         UI.showToast("PDF Generated");
     },
 
     // Generate CSV report
     generateCSV(cls, students, records, startDate, endDate) {
-        let csv = 'Reg No,Name,Present,Absent,Percentage\n';
+        // Sort records by date
+        records.sort((a, b) => new Date(a.date) - new Date(b.date));
+        const dates = records.map(r => r.date);
+
+        if (dates.length === 0) {
+            UI.showToast("No attendance data in range");
+            return;
+        }
+
+        // Header Row
+        let csv = 'Reg No,Name';
+        dates.forEach(d => csv += `,${d}`);
+        csv += '\n';
         
+        // Data Rows
         students.forEach(s => {
-            let present = 0, absent = 0;
-            records.forEach(r => {
-                if (r.records && r.records[s.id]) {
-                    r.records[s.id] === 'Present' ? present++ : absent++;
-                }
+            csv += `${s.regNo},${s.name}`;
+            dates.forEach(date => {
+                const record = records.find(r => r.date === date);
+                const status = record && record.records && record.records[s.id] ? record.records[s.id] : '-';
+                csv += `,${status}`;
             });
-            const total = present + absent;
-            const percentage = total > 0 ? ((present / total) * 100).toFixed(1) : '0';
-            
-            csv += `${s.regNo},${s.name},${present},${absent},${percentage}%\n`;
+            csv += '\n';
         });
         
-        const fileName = `${cls.name}_Attendance_${startDate}_to_${endDate}.csv`;
+        const fileName = `${cls.name}_Report.csv`;
         
-        // Use Android native method if available
         if (typeof Android !== 'undefined' && Android.saveToDownloads) {
             Android.saveToDownloads(csv, fileName, 'text/csv');
         } else {
-            // Browser fallback
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -136,7 +181,6 @@ const Export = {
             a.download = fileName;
             a.click();
         }
-        
         UI.showToast("CSV Downloaded");
     }
 };

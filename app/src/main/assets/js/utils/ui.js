@@ -60,6 +60,24 @@ const UI = {
                 modal.classList.add('hidden');
             }, 300);
         }
+    },
+
+    // Confirmation Dialog
+    showConfirm(title, message) {
+        return new Promise(resolve => {
+            this.confirmResolve = resolve;
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            this.openModal('modal-confirm');
+        });
+    },
+
+    closeConfirm(result) {
+        this.closeModal('modal-confirm');
+        if (this.confirmResolve) {
+            this.confirmResolve(result);
+            this.confirmResolve = null;
+        }
     }
 };
 
@@ -71,5 +89,7 @@ window.nav = UI.nav;
 window.showToast = UI.showToast;
 window.openModal = UI.openModal;
 window.closeModal = UI.closeModal;
+window.showConfirm = (t, m) => UI.showConfirm(t, m);
+window.closeConfirm = (r) => UI.closeConfirm(r);
 
 console.log('✅ UI utilities loaded');
