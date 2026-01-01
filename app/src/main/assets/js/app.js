@@ -35,6 +35,11 @@ window.onload = async () => {
         Analytics.loadThreshold();
     }
 
+    // Initialize License Engine (Apply Theme & Locks)
+    if (window.License) {
+        License.init();
+    }
+
     console.log('✅ FacultyPro ready!');
 };
 
@@ -54,18 +59,15 @@ function loadProfile() {
     if (subjectInput) subjectInput.value = subject;
     if (greeting) greeting.innerText = name || 'Faculty';
 
-    // Update Profile Initials
+    // Update Profile Initials (Settings & Home)
     const initial = document.getElementById('profile-initial');
-    if (initial) {
-        initial.innerText = (name || 'F').charAt(0).toUpperCase();
-        
-        // Add Golden Gradient to Text (via inline style or class if safe)
-        // Since we can't easily do text-gradient in inline styles without webkit-background-clip,
-        // we already added a gold color in CSS. Let's ensure it pops.
-        initial.style.background = "linear-gradient(to bottom right, #DEBE63, #FFE5B4)";
-        initial.style.webkitBackgroundClip = "text";
-        initial.style.webkitTextFillColor = "transparent";
-    }
+    const homeInitial = document.getElementById('home-profile-initial');
+    const char = (name || 'F').charAt(0).toUpperCase();
+    
+    if (initial) initial.innerText = char;
+    if (homeInitial) homeInitial.innerText = char;
+    
+    // Hardcoded gradients removed to respect Theme Variables (text-[var(--primary)])
 }
 
 function saveProfile() {
@@ -81,13 +83,12 @@ function saveProfile() {
     if (greeting) greeting.innerText = name || 'Faculty';
     
     // Update Initial Immediately
+    const char = (name || 'F').charAt(0).toUpperCase();
     const initial = document.getElementById('profile-initial');
-    if (initial) {
-        initial.innerText = (name || 'F').charAt(0).toUpperCase();
-        initial.style.background = "linear-gradient(to bottom right, #DEBE63, #FFE5B4)";
-        initial.style.webkitBackgroundClip = "text";
-        initial.style.webkitTextFillColor = "transparent";
-    }
+    const homeInitial = document.getElementById('home-profile-initial');
+    
+    if (initial) initial.innerText = char;
+    if (homeInitial) homeInitial.innerText = char;
     
     if (window.UI) UI.showToast('Profile Saved');
 }

@@ -1,13 +1,30 @@
 /* FacultyPro - Core Application Styles */
 /* Extracted from attendance.html for modular architecture */
 
+:root {
+    --primary: #3B82F6;         /* Blue 500 */
+    --primary-dim: rgba(59, 130, 246, 0.1);
+    --primary-dark: #1d4ed8;    /* Blue 700 */
+    --on-primary: #FFFFFF;      /* White Text on Blue */
+    --bg-surface: #020617;      /* Deep Slate Black (Default) */
+    --bg-glow-secondary: rgba(100, 116, 139, 0.1); /* Subtle Slate Glow */
+    --accent-text: #9CA3AF;     /* Gray 400 */
+}
+
 body {
-            background-color: #101622;
+            background-color: var(--bg-surface);
             color: white;
             font-family: 'Lexend', sans-serif;
             height: 100dvh;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
+            /* Hide Scrollbar */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+        
+        body::-webkit-scrollbar {
+            display: none;
         }
 
         .material-symbols-outlined {

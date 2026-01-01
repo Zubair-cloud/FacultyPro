@@ -27,27 +27,34 @@
     <!-- DSU "Golden Neon" Background -->
     <div class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-[#030001]">
         <!-- Golden Glow (Top Left) - Replaces Blue -->
-        <div class="absolute -top-20 -left-20 h-96 w-96 rounded-full bg-[#DEBE63]/20 blur-[100px]"></div>
+        <div class="absolute -top-20 -left-20 h-96 w-96 rounded-full bg-[var(--primary)]/20 blur-[100px]"></div>
         <!-- Maroon Depth (Bottom Right) - Replaces Red -->
-        <div class="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-[#5D250D]/30 blur-[100px]"></div>
+        <div class="absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-[var(--bg-glow-secondary)] blur-[100px]">
+        </div>
     </div>
 
     <div
-        class="relative z-10 h-full w-full md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col bg-[#030001]/60 shadow-2xl border-x border-[#DEBE63]/10 backdrop-blur-md">
+        class="relative z-10 h-full w-full md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col bg-[var(--bg-surface)]/95 shadow-2xl md:border-x border-[var(--primary)]/10 backdrop-blur-md">
 
         <div id="page-home" class="page active">
             <div class="flex flex-col gap-2 p-6 pb-2">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <!-- DSU Logo / Icon -->
-                        <div
-                            class="size-14 rounded-full bg-gradient-to-br from-[#DEBE63] to-[#A47F1E] p-0.5 shadow-lg shadow-[#DEBE63]/20">
+                        <!-- DSU Logo / Icon (Premium) -->
+                        <div id="home-logo-dsu"
+                            class="hidden size-14 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dark)] p-0.5 shadow-lg shadow-[var(--primary-dim)]">
                             <div
-                                class="h-full w-full rounded-full bg-[#030001] flex items-center justify-center overflow-hidden">
-                                <!-- Using DSU Logo from Assets -->
+                                class="h-full w-full rounded-full bg-[var(--bg-surface)] flex items-center justify-center overflow-hidden">
                                 <img src="institutions/dsu/logos/dsulogo.png" alt="DSU"
                                     class="h-full w-full object-cover opacity-90">
                             </div>
+                        </div>
+
+                        <!-- Generic Profile Icon (Standard) -->
+                        <div id="home-logo-generic"
+                            class="size-14 rounded-full bg-[var(--bg-surface)] border border-[var(--primary)]/20 flex items-center justify-center text-2xl font-bold text-[var(--primary)] shadow-[0_0_15px_var(--primary-dim)]">
+                            <span id="home-profile-initial">F</span>
                         </div>
                         <div>
                             <p class="text-xs text-gray-400 font-medium">Welcome back,</p>
@@ -244,7 +251,7 @@
             <div class="p-4 pt-4 flex flex-col gap-6 max-w-2xl mx-auto">
                 <div class="flex items-center gap-4 p-6 rounded-2xl glass-card">
                     <div id="profile-icon-container"
-                        class="size-16 rounded-full bg-[#101010] border border-[#DEBE63]/20 flex items-center justify-center text-2xl font-bold text-[#DEBE63] shadow-[0_0_15px_rgba(222,190,99,0.2)]">
+                        class="size-16 rounded-full bg-[var(--bg-surface)] border border-[var(--primary)]/20 flex items-center justify-center text-2xl font-bold text-[var(--primary)] shadow-[0_0_15px_var(--primary-dim)]">
                         <span id="profile-initial">F</span>
                     </div>
                     <div class="flex-1 space-y-2">
@@ -256,7 +263,33 @@
                             class="w-full bg-transparent border-none p-0 text-sm text-primary font-bold placeholder-gray-600 focus:ring-0">
                     </div>
                     <button onclick="saveProfile()"
-                        class="text-primary font-bold text-sm hover:text-white transition">SAVE</button>
+                        class="text-[var(--primary)] font-bold text-sm hover:text-white transition">SAVE</button>
+                </div>
+
+                <!-- License Section -->
+                <div class="p-6 rounded-2xl glass-card space-y-4 border border-[var(--primary)]/10">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-white font-bold flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[var(--primary)]">verified_user</span>
+                            License Status
+                        </h3>
+                        <span id="license-status-badge"
+                            class="px-3 py-1 rounded-lg bg-gray-800 border border-gray-700 text-xs text-gray-400 font-mono tracking-wider">STANDARD</span>
+                    </div>
+
+                    <div id="license-input-group" class="flex flex-col gap-3">
+                        <input id="license-key-input" type="text" placeholder="Enter Master Key"
+                            class="w-full rounded-xl bg-[var(--bg-surface)] border border-white/10 text-white text-sm px-4 py-3 focus:border-[var(--primary)] transition">
+                        <button onclick="activateLicense(document.getElementById('license-key-input').value)"
+                            class="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-bold text-sm hover:opacity-90 active:scale-95 transition shadow-[0_0_15px_var(--primary-dim)]">
+                            UNLOCK
+                        </button>
+                    </div>
+
+                    <button id="license-remove-btn" onclick="License.deactivate()"
+                        class="hidden w-full py-3 rounded-xl border border-red-500/30 text-red-400 text-sm font-bold hover:bg-red-500/10">
+                        Remove License (Dev)
+                    </button>
                 </div>
                 <div class="flex flex-col gap-3">
                     <button onclick="backupData()"
@@ -296,9 +329,10 @@
                         </div>
                     </button>
                     <!-- Intervention Templates Button -->
-                    <button onclick="Intervention.openTemplateManager()"
-                        class="flex items-center gap-4 p-4 rounded-2xl glass-card active:bg-white/10 transition hover:bg-white/5 border border-[#DEBE63]/20 mt-4">
-                        <div class="size-12 rounded-xl bg-[#DEBE63]/20 flex items-center justify-center text-[#DEBE63]">
+                    <button id="btn-intervention-templates" onclick="Intervention.openTemplateManager()"
+                        class="flex items-center gap-4 p-4 rounded-2xl glass-card active:bg-white/10 transition hover:bg-white/5 border border-[var(--primary)]/20 mt-4">
+                        <div
+                            class="size-12 rounded-xl bg-[var(--primary)]/20 flex items-center justify-center text-[var(--primary)]">
                             <span class="material-symbols-outlined">library_books</span>
                         </div>
                         <div class="text-left flex-1">
@@ -310,7 +344,8 @@
                 </div>
 
                 <div class="mt-8 text-center pb-8 opacity-60">
-                    <p class="text-[10px] text-[#DEBE63] font-medium tracking-widest uppercase mb-1">Developed by</p>
+                    <p class="text-[10px] text-[var(--primary)] font-medium tracking-widest uppercase mb-1">Developed by
+                    </p>
                     <p class="text-xs text-white font-bold tracking-widest uppercase">Zinc Labs</p>
                     <p class="text-[8px] text-gray-500 mt-1">v24.1.0 • Zinc Edition</p>
                 </div>
@@ -322,22 +357,23 @@
             <div class="p-6 flex flex-col gap-6">
                 <!-- Header -->
                 <div>
-                    <h1 class="text-2xl font-bold text-[#DEBE63] drop-shadow-[0_0_15px_rgba(222,190,99,0.5)]">Class
+                    <h1 class="text-2xl font-bold text-[var(--primary)] drop-shadow-[0_0_15px_rgba(222,190,99,0.5)]">
+                        Class
                         Insights</h1>
                     <p class="text-gray-400 text-sm">Performance & Trends</p>
                 </div>
 
                 <!-- Class Dropdown -->
-                <div class="glass-card p-4 rounded-xl border border-[#DEBE63]/30">
-                    <label class="block text-xs font-bold text-[#DEBE63] uppercase tracking-widest mb-2">Select
+                <div class="glass-card p-4 rounded-xl border border-[var(--primary)]/30">
+                    <label class="block text-xs font-bold text-[var(--primary)] uppercase tracking-widest mb-2">Select
                         Class</label>
                     <div class="flex gap-2">
                         <select id="analytics-class-select" onchange="Analytics.loadClassData()"
-                            class="flex-1 bg-black/50 border border-white/10 text-white text-sm rounded-lg p-3 outline-none focus:border-[#DEBE63] transition-colors">
+                            class="flex-1 bg-black/50 border border-white/10 text-white text-sm rounded-lg p-3 outline-none focus:border-[var(--primary)] transition-colors">
                             <option value="">Choose a class...</option>
                         </select>
                         <button onclick="Analytics.loadClassData()"
-                            class="bg-[#DEBE63] text-black rounded-lg px-4 flex items-center justify-center shadow-[0_0_15px_rgba(222,190,99,0.4)]">
+                            class="bg-[var(--primary)] text-black rounded-lg px-4 flex items-center justify-center shadow-[0_0_15px_rgba(222,190,99,0.4)]">
                             <span class="material-symbols-outlined">refresh</span>
                         </button>
                     </div>
@@ -362,9 +398,10 @@
 
                 <!-- Summary Chart Area (Neon Graph) -->
                 <div id="analytics-hero" class="hidden flex-col gap-4">
-                    <div class="glass-card p-6 rounded-2xl border border-[#DEBE63]/20 relative overflow-hidden">
+                    <div class="glass-card p-6 rounded-2xl border border-[var(--primary)]/20 relative overflow-hidden">
                         <!-- Glow Effect -->
-                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#DEBE63]/20 blur-[50px] rounded-full">
+                        <div
+                            class="absolute -top-10 -right-10 w-32 h-32 bg-[var(--primary)]/20 blur-[50px] rounded-full">
                         </div>
 
                         <div class="relative z-10">
@@ -395,7 +432,7 @@
                             ⚠️ At Risk (<span id="count-warning">0</span>)
                         </button>
                         <button onclick="Analytics.switchTab('star')" id="tab-star"
-                            class="flex-shrink-0 px-4 py-2 rounded-full border border-[#DEBE63]/30 bg-[#DEBE63]/10 text-[#DEBE63] text-xs font-bold opacity-50">
+                            class="flex-shrink-0 px-4 py-2 rounded-full border border-[var(--primary)]/30 bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-bold opacity-50">
                             👑 Stars (<span id="count-star">0</span>)
                         </button>
                     </div>
@@ -615,7 +652,7 @@
     <div id="modal-analytics-profile"
         class="modal-overlay fixed inset-0 z-[70] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
         <div
-            class="modal-content w-full h-[85vh] sm:h-auto sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
+            class="modal-content w-full h-[85vh] sm:h-auto sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[var(--primary)]/20 bg-[var(--bg-surface)] shadow-2xl">
 
             <!-- Header -->
             <div class="p-6 pb-2 border-b border-white/5">
@@ -624,7 +661,7 @@
                         <div id="anl-profile-avatar"
                             class="size-14 rounded-full bg-gradient-to-br from-[#DEBE63] to-[#5D250D] p-0.5">
                             <div class="size-full rounded-full bg-black flex items-center justify-center">
-                                <span id="anl-profile-initial" class="text-xl font-bold text-[#DEBE63]">A</span>
+                                <span id="anl-profile-initial" class="text-xl font-bold text-[var(--primary)]">A</span>
                             </div>
                         </div>
                         <div>
@@ -647,7 +684,7 @@
                 <div class="grid grid-cols-2 gap-3">
                     <div class="glass-card p-4 rounded-2xl bg-white/5 border border-white/5">
                         <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Attendance</p>
-                        <h2 id="anl-profile-percent" class="text-3xl font-bold text-[#DEBE63] mt-1">0%</h2>
+                        <h2 id="anl-profile-percent" class="text-3xl font-bold text-[var(--primary)] mt-1">0%</h2>
                     </div>
                     <div class="glass-card p-4 rounded-2xl bg-white/5 border border-white/5">
                         <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Sessions</p>
@@ -680,9 +717,9 @@
             </div>
 
             <!-- Sticky Action Button -->
-            <div class="p-4 border-t border-white/10 bg-[#101010]/90 backdrop-blur pb-8 sm:pb-4">
+            <div class="p-4 border-t border-white/10 bg-[var(--bg-surface)]/90 backdrop-blur pb-8 sm:pb-4">
                 <button onclick="Analytics.openIntervention()"
-                    class="w-full py-4 rounded-xl bg-[#DEBE63] text-black font-bold text-sm tracking-wide shadow-[0_0_20px_rgba(222,190,99,0.3)] hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
+                    class="w-full py-4 rounded-xl bg-[var(--primary)] text-black font-bold text-sm tracking-wide shadow-[0_0_20px_rgba(222,190,99,0.3)] hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined">bolt</span>
                     TAKE ACTION
                 </button>
@@ -694,13 +731,13 @@
     <div id="modal-intervention"
         class="modal-overlay fixed inset-0 z-[80] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
         <div
-            class="modal-content w-full h-[90vh] sm:h-auto sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
+            class="modal-content w-full h-[90vh] sm:h-auto sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[var(--primary)]/20 bg-[var(--bg-surface)] shadow-2xl">
 
             <!-- Header -->
             <div class="p-6 pb-2 border-b border-white/5 flex justify-between items-center">
                 <div>
                     <h3 class="text-xl font-bold text-white">Take Action</h3>
-                    <p class="text-xs text-[#DEBE63]">Review Letter</p>
+                    <p class="text-xs text-[var(--primary)]">Review Letter</p>
                 </div>
                 <button onclick="closeModal('modal-intervention')"
                     class="size-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-white/10 hover:text-white transition">
@@ -715,7 +752,7 @@
                 <!-- Preview Area -->
                 <div class="relative">
                     <textarea id="intervention-preview"
-                        class="w-full h-64 bg-[#0A0A0A] border border-white/10 rounded-xl p-4 text-sm text-gray-300 font-mono focus:border-[#DEBE63] focus:outline-none resize-none leading-relaxed shadow-inner"
+                        class="w-full h-64 bg-[#0A0A0A] border border-white/10 rounded-xl p-4 text-sm text-gray-300 font-mono focus:border-[var(--primary)] focus:outline-none resize-none leading-relaxed shadow-inner"
                         spellcheck="false"></textarea>
                     <div class="absolute bottom-3 right-3 text-[10px] text-gray-600 pointer-events-none">EDITABLE</div>
                 </div>
@@ -723,13 +760,14 @@
                 <!-- Template Settings Toggle -->
                 <div class="flex justify-end">
                     <button onclick="Intervention.saveTemplate(document.getElementById('intervention-preview').value)"
-                        class="text-xs text-[#DEBE63] underline opacity-50 hover:opacity-100 transition">Save as New
+                        class="text-xs text-[var(--primary)] underline opacity-50 hover:opacity-100 transition">Save as
+                        New
                         Template</button>
                 </div>
             </div>
 
             <!-- Actions -->
-            <div class="p-6 border-t border-white/10 flex flex-col gap-3 bg-[#101010]/90 backdrop-blur">
+            <div class="p-6 border-t border-white/10 flex flex-col gap-3 bg-[var(--bg-surface)]/90 backdrop-blur">
                 <!-- File Export Options -->
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="Intervention.sharePDF()"
@@ -808,6 +846,7 @@
     <script src="js/features/backup.js"></script>
     <script src="js/features/analytics.js"></script>
     <script src="js/features/intervention.js"></script>
+    <script src="js/features/license.js"></script>
 
     <!-- 5. App Initialization -->
     <script src="js/app.js"></script>
@@ -816,11 +855,11 @@
     <div id="modal-templates-list"
         class="modal-overlay fixed inset-0 z-[70] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
         <div
-            class="modal-content w-full h-[80vh] sm:h-[600px] sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
-            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-[#DEBE63]/5">
+            class="modal-content w-full h-[80vh] sm:h-[600px] sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[var(--primary)]/20 bg-[var(--bg-surface)] shadow-2xl">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-[var(--primary)]/5">
                 <div>
                     <h3 class="text-xl font-bold text-white">Templates</h3>
-                    <p class="text-xs text-[#DEBE63]">Manage your interventions</p>
+                    <p class="text-xs text-[var(--primary)]">Manage your interventions</p>
                 </div>
                 <button onclick="closeModal('modal-templates-list')"
                     class="size-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white">
@@ -832,7 +871,7 @@
             </div>
             <div class="p-4 border-t border-white/10 space-y-2">
                 <button onclick="Intervention.createNewTemplate()"
-                    class="w-full py-3 rounded-xl bg-[#DEBE63] text-black font-bold flex items-center justify-center gap-2 hover:bg-[#c5a650]">
+                    class="w-full py-3 rounded-xl bg-[var(--primary)] text-black font-bold flex items-center justify-center gap-2 hover:bg-[#c5a650]">
                     <span class="material-symbols-outlined">add</span> Create New Template
                 </button>
                 <button onclick="Intervention.resetToDefaults()"
@@ -847,7 +886,7 @@
     <div id="modal-template-editor"
         class="modal-overlay fixed inset-0 z-[80] hidden items-end sm:items-center justify-center bg-black/90 backdrop-blur-md">
         <div
-            class="modal-content w-full h-[95vh] sm:h-[700px] sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[#DEBE63]/20 bg-[#101010] shadow-2xl">
+            class="modal-content w-full h-[95vh] sm:h-[700px] sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[var(--primary)]/20 bg-[var(--bg-surface)] shadow-2xl">
             <!-- Header -->
             <div class="p-4 border-b border-white/5 flex justify-between items-center">
                 <input id="edit-template-title"
@@ -868,7 +907,7 @@
                         class="px-3 py-1.5 rounded-lg bg-[#2E5BFF]/10 border border-[#2E5BFF]/30 text-[#2E5BFF] text-xs font-bold whitespace-nowrap hover:bg-[#2E5BFF]/20 transition">+
                         RegNo</button>
                     <button onclick="Intervention.insertTag('{percentage}')"
-                        class="px-3 py-1.5 rounded-lg bg-[#DEBE63]/10 border border-[#DEBE63]/30 text-[#DEBE63] text-xs font-bold whitespace-nowrap hover:bg-[#DEBE63]/20 transition">+
+                        class="px-3 py-1.5 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)]/30 text-[var(--primary)] text-xs font-bold whitespace-nowrap hover:bg-[var(--primary)]/20 transition">+
                         %</button>
                     <button onclick="Intervention.insertTag('{subject}')"
                         class="px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-500 text-xs font-bold whitespace-nowrap hover:bg-green-500/20 transition">+
@@ -895,7 +934,7 @@
                     class="p-3 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20"><span
                         class="material-symbols-outlined">delete</span></button>
                 <button onclick="Intervention.saveEditorContent()"
-                    class="flex-1 py-3 rounded-xl bg-[#DEBE63] text-black font-bold hover:bg-[#c5a650] shadow-lg shadow-[#DEBE63]/10">Save
+                    class="flex-1 py-3 rounded-xl bg-[var(--primary)] text-black font-bold hover:bg-[#c5a650] shadow-lg shadow-[#DEBE63]/10">Save
                     Template</button>
             </div>
         </div>

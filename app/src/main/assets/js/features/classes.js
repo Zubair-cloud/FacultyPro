@@ -44,7 +44,7 @@ const Classes = {
                         <p class="text-sm text-gray-400 font-medium">${c.time || 'Flexible'}</p>
                     </div>
                 </div>
-                <button class="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transition-transform hover:scale-110">
+                <button class="size-10 rounded-xl bg-primary flex items-center justify-center text-black shadow-lg shadow-primary-dim transition-transform hover:scale-110">
                     <span class="material-symbols-outlined">chevron_right</span>
                 </button>
             `;

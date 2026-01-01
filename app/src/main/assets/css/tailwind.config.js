@@ -7,12 +7,12 @@ try {
                 theme: {
                     extend: {
                         colors: {
-                            "primary": "#DEBE63",      // Golden (Neon Source)
-                            "primary-dark": "#A47F1E", // Deep Gold
-                            "accent": "#5D250D",       // Dark Brown/Maroon
+                            "primary": "var(--primary)",      // Dynamic Theme Color
+                            "primary-dim": "var(--primary-dim)",
+                            "accent": "#5D250D",       // Dark Brown/Maroon (Keep fixed or var if needed)
                             "background-light": "#FDF1E2",
-                            "background-dark": "#030001", // Near Black
-                            "surface": "rgba(222, 190, 99, 0.08)" // Gold Tint
+                            "background-dark": "var(--bg-surface)", // Dynamic Surface
+                            "surface": "var(--primary-dim)" // Use dim for faint surfaces
                         },
                         fontFamily: {
                             "display": ["Lexend", "sans-serif"]
