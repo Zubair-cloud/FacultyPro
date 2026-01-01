@@ -79,7 +79,15 @@ const Export = {
             return;
         }
 
-        const dateChunkSize = 7; // Max dates per page
+        const regColWidth = 35;
+        const nameColWidth = 50;
+        const dateColWidth = 15;
+        const startX = 14;
+        const pageWidth = doc.internal.pageSize.width;
+        
+        // Calculate max dates that fit on page
+        const availableWidth = pageWidth - (startX * 2) - regColWidth - nameColWidth;
+        const dateChunkSize = Math.floor(availableWidth / dateColWidth); // Dynamic calculation (~12 cols)
         
         // Loop through chunks of dates
         for (let i = 0; i < dates.length; i += dateChunkSize) {
@@ -95,37 +103,77 @@ const Export = {
             const totalPages = Math.ceil(dates.length / dateChunkSize);
             doc.text(`Page ${pageNum} of ${totalPages} (Dates: ${currentDates[0]} to ${currentDates[currentDates.length-1]})`, 14, 22);
 
-            // Table Headers
-            // Formatted dates for header (e.g., "Dec 31")
-            const dateHeaders = currentDates.map(d => {
-                const doer = new Date(d);
-                return `${doer.getDate()}/${doer.getMonth()+1}`;
+            // Manual Table Implementation (No AutoTable Dependency)
+            
+            // Manual Table Implementation
+            
+            const rowHeight = 8;
+            let currentY = 30;
+            
+            // Header Background
+            doc.setFillColor(22, 163, 74); // Green
+            doc.rect(startX, currentY, (regColWidth + nameColWidth + (currentDates.length * dateColWidth)), rowHeight, 'F');
+            
+            // Header Text
+            doc.setTextColor(255, 255, 255); // White
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(10);
+            
+            doc.text("Reg No", startX + 2, currentY + 5);
+            doc.text("Name", startX + regColWidth + 2, currentY + 5);
+            
+            currentDates.forEach((d, idx) => {
+                const dateObj = new Date(d);
+                const dateStr = `${dateObj.getDate()}/${dateObj.getMonth()+1}`;
+                doc.text(dateStr, startX + regColWidth + nameColWidth + (idx * dateColWidth) + 2, currentY + 5);
             });
-            const head = [['Reg No', 'Name', ...dateHeaders]];
-
-            // Table Body
-            const body = students.map(s => {
-                const row = [s.regNo, s.name];
-                currentDates.forEach(date => {
-                    // Find record for this date
+            
+            currentY += rowHeight;
+            
+            // Body Rows
+            doc.setTextColor(0, 0, 0); // Black
+            doc.setFont("helvetica", "normal");
+            
+            students.forEach((s, sIdx) => {
+                // Background for alternate rows
+                if (sIdx % 2 === 1) {
+                    doc.setFillColor(240, 240, 240); // Light Gray
+                    doc.rect(startX, currentY, (regColWidth + nameColWidth + (currentDates.length * dateColWidth)), rowHeight, 'F');
+                }
+                
+                // Content
+                doc.text(s.regNo.toString(), startX + 2, currentY + 5);
+                
+                // Truncate name if too long
+                let name = s.name;
+                if (name.length > 20) name = name.substring(0, 18) + "..";
+                doc.text(name, startX + regColWidth + 2, currentY + 5);
+                
+                currentDates.forEach((date, dIdx) => {
                     const record = records.find(r => r.date === date);
                     const status = record && record.records && record.records[s.id] ? record.records[s.id] : '-';
-                    // Simplify status for space (P/A)
-                    row.push(status.charAt(0)); 
+                    const symbol = status.charAt(0);
+                    
+                    // Color code status
+                    if (symbol === 'A') doc.setTextColor(220, 38, 38); // Red
+                    else if (symbol === 'P') doc.setTextColor(22, 163, 74); // Green
+                    else doc.setTextColor(0,0,0);
+                    
+                    doc.text(symbol, startX + regColWidth + nameColWidth + (dIdx * dateColWidth) + 5, currentY + 5);
+                    
+                    doc.setTextColor(0,0,0); // Reset
                 });
-                return row;
-            });
-
-            doc.autoTable({
-                head: head,
-                body: body,
-                startY: 25,
-                styles: { fontSize: 10, cellPadding: 2 },
-                headStyles: { fillColor: [22, 163, 74] }, // Green header
-                columnStyles: {
-                    0: { cellWidth: 30, fontStyle: 'bold' }, // Reg No
-                    1: { cellWidth: 50, fontStyle: 'bold' }  // Name
-                    // Remaining columns will auto-size
+                
+                currentY += rowHeight;
+                
+                // Page Break Check
+                if (currentY > 180) { // Approx height limit
+                    doc.addPage();
+                    currentY = 20;
+                    // Draw Simple Header again
+                    doc.setFontSize(8);
+                    doc.text("(Continued...)", 14, 10);
+                    doc.setFontSize(10);
                 }
             });
         }
