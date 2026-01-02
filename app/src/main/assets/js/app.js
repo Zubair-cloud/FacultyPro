@@ -37,7 +37,7 @@ window.onload = async () => {
 
     // Initialize License Engine (Apply Theme & Locks)
     if (window.License) {
-        License.init();
+        await License.init();
     }
 
     console.log('✅ FacultyPro ready!');

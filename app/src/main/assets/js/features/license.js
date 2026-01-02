@@ -1,9 +1,16 @@
 // FacultyPro - License & Modularity Engine
-// Handles "Freemium" logic, Master Key activation, and Dynamic Theming
+// Handles "Freemium" logic, Hybrid Key activation (Secure Hash), and Dynamic Theming
 
 const License = {
     // 🔐 Configuration
-    MASTER_KEY: "ZINC-MASTER-DSU",
+    // REPLACED: Master Key removed. Using Secure Hashes.
+    VALID_HASHES: [
+        "dda5d319c55d78fbe7ca3bc8176eba8a51fad61e558e95c952f574016c21b30b", // ZINC-DSU-X7A9B2C
+        "8d7f7dfb72016466b72d0f89c432679f6645a0347b55a47889bc0a7842903e9c", // ZINC-DSU-Y4K8M1P
+        "7fa8ade9679608c5c5a3ea728df2253fd85270d8111dfe75868a82c1aaea61af", // ZINC-DSU-W3R5T9L
+        "f58b5e11df716c3b4fe709f15655aab670045afd2f922a4a7303e05e9919fa09", // ZINC-DSU-Q2N6J4H
+        "178e06646bc83b6160bda5a8b27f98a5f6fcb9ed7dab5c2666a61255b7a767e5"  // ZINC-DSU-V8D5F3S
+    ],
     STORAGE_KEY: "facultypro_license",
     
     // 🎨 Theme Definitions
@@ -29,11 +36,12 @@ const License = {
     },
 
     // 🚀 Initialization
-    init() {
-        console.log("🔐 License Engine: Initializing...");
+    async init() {
+        console.log("🔐 License Engine: Initializing (Async)...");
         const savedKey = localStorage.getItem(this.STORAGE_KEY);
         
-        if (this.validateKey(savedKey)) {
+        // Need to await validation since it uses crypto.subtle
+        if (await this.validateKey(savedKey)) {
             console.log("🌟 Premium License Active");
             this.applyTheme(this.THEMES.PREMIUM);
             this.unlockFeatures(true);
@@ -44,19 +52,45 @@ const License = {
         }
     },
 
-    // 🔑 Validation
-    validateKey(key) {
+    // 🔑 Secure Validation using SHA-256
+    async validateKey(key) {
         if (!key) return false;
-        // Simple Master Key check for now
-        return key.trim() === this.MASTER_KEY;
+        
+        try {
+            const hash = await this.sha256(key.trim());
+            console.log(`🔍 Checking Hash: ${hash.substring(0, 8)}...`);
+            
+            if (this.VALID_HASHES.includes(hash)) {
+                return true;
+            }
+        } catch (e) {
+            console.error("Hash calculation failed", e);
+        }
+        
+        return false;
+    },
+    
+    // Helper: SHA-256 Hashing
+    async sha256(message) {
+        const msgBuffer = new TextEncoder().encode(message);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex;
     },
 
-    // ⚡ Activation
-    activate(key) {
-        if (this.validateKey(key)) {
-            localStorage.setItem(this.STORAGE_KEY, key);
-            if (window.UI) UI.showToast("🌟 Premium Activated!");
-            setTimeout(() => location.reload(), 1000); // Reload to apply all changes cleanly
+    // 🔓 Activation Logic
+    async activate(inputKey) {
+        if (await this.validateKey(inputKey)) {
+            localStorage.setItem(this.STORAGE_KEY, inputKey.trim());
+            if (window.UI) UI.showToast("🌟 Premium License Activated!");
+            this.applyTheme(this.THEMES.PREMIUM);
+            this.unlockFeatures(true);
+            
+            // Reload after short delay to refresh all UI components fully
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
             return true;
         } else {
             if (window.UI) UI.showToast("❌ Invalid License Key");
@@ -64,84 +98,86 @@ const License = {
         }
     },
 
-    // 🚮 Deactivation (For testing)
+    // 🚫 Deactivation
     deactivate() {
         localStorage.removeItem(this.STORAGE_KEY);
-        if (window.UI) UI.showToast("🔒 License Removed");
-        setTimeout(() => location.reload(), 1000);
+        this.applyTheme(this.THEMES.DEFAULT);
+        this.unlockFeatures(false);
+        if (window.UI) UI.showToast("🔒 License Deactivated");
+        setTimeout(() => location.reload(), 500);
     },
 
-    // 🎨 Theme Application
+    // 🎨 Theme Switcher
     applyTheme(theme) {
         const root = document.documentElement;
-        Object.entries(theme).forEach(([property, value]) => {
-            root.style.setProperty(property, value);
-        });
-    },
-
-    // 🔓 Feature Locking/Unlocking
-    unlockFeatures(isPremium) {
-        // We will control visibility via CSS classes toggled here
-        const analyticsNav = document.getElementById('nav-analytics');
-        const analyticsPage = document.getElementById('page-analytics');
-        const templateBtn = document.getElementById('btn-intervention-templates');
-        
-        // Home Header Logos
-        const logoDSU = document.getElementById('home-logo-dsu');
-        const logoGeneric = document.getElementById('home-logo-generic');
-        
-        // Settings UI Elements
-        const statusBadge = document.getElementById('license-status-badge');
-        const inputGroup = document.getElementById('license-input-group');
-        const removeBtn = document.getElementById('license-remove-btn');
-        
-        if (isPremium) {
-            // Unlock
-            if (analyticsNav) analyticsNav.classList.remove('hidden');
-            if (templateBtn) templateBtn.classList.remove('hidden');
-            
-            // Toggle Logos (Show DSU)
-            if (logoDSU) logoDSU.classList.remove('hidden');
-            if (logoGeneric) logoGeneric.classList.add('hidden');
-            
-            // UI Updates
-            if (statusBadge) {
-                statusBadge.innerText = "PREMIUM (GOLD)";
-                statusBadge.className = "px-3 py-1 rounded-lg bg-[#DEBE63]/20 border border-[#DEBE63] text-[#DEBE63] text-xs font-bold font-mono tracking-wider shadow-[0_0_10px_rgba(222,190,99,0.3)]";
-            }
-            if (inputGroup) inputGroup.classList.add('hidden');
-            if (removeBtn) removeBtn.classList.remove('hidden');
-            
-        } else {
-            // Lock
-            if (analyticsNav) analyticsNav.classList.add('hidden');
-            if (templateBtn) templateBtn.classList.add('hidden');
-            
-            // Toggle Logos (Show Generic)
-            if (logoDSU) logoDSU.classList.add('hidden');
-            if (logoGeneric) logoGeneric.classList.remove('hidden');
-            
-            // UI Updates
-            if (statusBadge) {
-                statusBadge.innerText = "STANDARD";
-                statusBadge.className = "px-3 py-1 rounded-lg bg-gray-800 border border-gray-700 text-xs text-gray-400 font-mono tracking-wider";
-            }
-            if (inputGroup) inputGroup.classList.remove('hidden');
-            if (removeBtn) removeBtn.classList.add('hidden');
-            
-            // Check if user is currently on a locked page (Analytics)
-            if (analyticsPage && analyticsPage.classList.contains('active')) {
-                UI.nav('page-home'); // Kick to home
-            }
+        for (const [key, value] of Object.entries(theme)) {
+            root.style.setProperty(key, value);
         }
     },
-    
-    // ❓ Helper for other modules
-    isPremium() {
-        return this.validateKey(localStorage.getItem(this.STORAGE_KEY));
+
+    // 🛠️ Feature Toggles
+    unlockFeatures(isPremium) {
+        const analyticsNav = document.getElementById('nav-analytics');
+        const settingsLock = document.getElementById('settings-lock-message');
+        
+        // License UI Elements
+        const licenseInputGroup = document.getElementById('license-input-group');
+        const licenseRemoveBtn = document.getElementById('license-remove-btn');
+        const licenseBadge = document.getElementById('license-status-badge');
+        
+        // Home Logo Strategy
+        const homeLogoGeneric = document.getElementById('home-logo-generic');
+        const homeLogoDSU = document.getElementById('home-logo-dsu');
+
+        if (isPremium) {
+            // Unlock Analytics
+            if (analyticsNav) analyticsNav.classList.remove('hidden');
+            
+            // Unlock Intervention Settings
+            const templateBtn = document.getElementById('btn-intervention-templates');
+            if (templateBtn) {
+                templateBtn.disabled = false;
+                templateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Update License UI -> Hide Input, Show Remove, Update Badge
+            if (licenseInputGroup) licenseInputGroup.classList.add('hidden');
+            if (licenseRemoveBtn) licenseRemoveBtn.classList.remove('hidden');
+            if (licenseBadge) {
+                licenseBadge.innerText = "PREMIUM";
+                licenseBadge.className = "px-3 py-1 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)] text-xs text-[var(--primary)] font-bold tracking-wider shadow-[0_0_10px_var(--primary-dim)]";
+            }
+            
+            // Show DSU Logo
+            if (homeLogoDSU) homeLogoDSU.classList.remove('hidden');
+            if (homeLogoGeneric) homeLogoGeneric.classList.add('hidden');
+
+        } else {
+            // Lock Analytics
+            if (analyticsNav) analyticsNav.classList.add('hidden');
+            
+            // Lock Intervention Settings
+            const templateBtn = document.getElementById('btn-intervention-templates');
+            if (templateBtn) {
+                templateBtn.disabled = true;
+                templateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Update License UI -> Show Input, Hide Remove, Reset Badge
+            if (licenseInputGroup) licenseInputGroup.classList.remove('hidden');
+            if (licenseRemoveBtn) licenseRemoveBtn.classList.add('hidden');
+            if (licenseBadge) {
+                licenseBadge.innerText = "STANDARD";
+                licenseBadge.className = "px-3 py-1 rounded-lg bg-gray-800 border border-gray-700 text-xs text-gray-400 font-mono tracking-wider";
+            }
+            
+            // Show Generic Profile Initial
+            if (homeLogoDSU) homeLogoDSU.classList.add('hidden');
+            if (homeLogoGeneric) homeLogoGeneric.classList.remove('hidden');
+        }
     }
 };
 
-// Export Globallly
+// Expose to window for inline HTML calls AND global access
 window.License = License;
 window.activateLicense = (key) => License.activate(key);
