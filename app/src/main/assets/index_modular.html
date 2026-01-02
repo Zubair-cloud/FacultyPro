@@ -78,8 +78,8 @@
         </div>
 
         <div id="page-attendance" class="page">
-            <div
-                class="sticky top-0 z-30 bg-background-dark/90 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+            <div id="att-header"
+                class="fixed top-0 left-0 right-0 z-[100] bg-[var(--bg-surface)] border-b border-white/10 p-4 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.8)] md:max-w-3xl lg:max-w-5xl mx-auto">
                 <button onclick="nav('page-home')"
                     class="size-10 flex items-center justify-center rounded-full glass-card text-white hover:bg-white/10 transition"><span
                         class="material-symbols-outlined">arrow_back</span></button>
@@ -95,7 +95,7 @@
                 <div class="size-10"></div>
             </div> <!-- Previous/Next Day Navigation (for History Mode) -->
             <div id="history-nav-buttons"
-                class="hidden bg-white/5 border-b border-white/5 p-2 flex items-center justify-center gap-3">
+                class="hidden sticky top-[130px] z-40 bg-[var(--bg-surface)]/98 backdrop-blur-3xl border-b border-white/10 p-2 flex items-center justify-center gap-3 shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
                 <button onclick="navigatePrevDay()"
                     class="flex items-center gap-1 px-3 py-2 rounded-lg glass-card text-white hover:bg-white/10 transition">
                     <span class="material-symbols-outlined text-lg">chevron_left</span>
@@ -109,20 +109,21 @@
             </div>
             <!-- Mode Indicator Banner -->
             <div id="mode-banner"
-                class="hidden bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-b border-blue-500/20 p-3 text-center">
+                class="hidden sticky top-[130px] z-40 bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-3xl border-b border-blue-500/30 p-3 text-center shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
                 <p class="text-white text-sm font-bold flex items-center justify-center gap-2">
                     <span id="mode-icon" class="material-symbols-outlined text-lg"></span>
                     <span id="mode-text"></span>
                 </p>
             </div>
 
-            <div id="late-entry-timer" class="hidden bg-yellow-500/10 border-b border-yellow-500/20 p-2 text-center">
+            <div id="late-entry-timer"
+                class="hidden sticky top-[130px] z-40 bg-yellow-500/10 backdrop-blur-3xl border-b border-yellow-500/30 p-2 text-center shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
                 <p class="text-yellow-400 text-sm font-bold flex items-center justify-center gap-2">
                     <span class="material-symbols-outlined text-lg">timer</span>
                     Late Entry Closing in: <span id="timer-display" class="font-mono text-lg">15:00</span>
                 </p>
             </div>
-            <div class="p-4 pb-32">
+            <div class="p-4 pb-32 pt-36">
                 <div class="glass-card p-4 rounded-2xl mb-4 flex justify-between items-center">
                     <div>
                         <p class="text-sm text-gray-400">Total Students</p>
@@ -379,22 +380,7 @@
                     </div>
                 </div>
 
-                <!-- Threshold Slider -->
-                <div class="glass-card p-4 rounded-xl border border-white/10">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="text-xs font-bold text-gray-400 uppercase tracking-wider">Low Attendance
-                            Cutoff</label>
-                        <span id="threshold-value" class="text-red-400 font-bold text-sm">80%</span>
-                    </div>
-                    <input type="range" id="threshold-slider" min="50" max="90" value="80" step="5"
-                        oninput="Analytics.updateThreshold(this.value)"
-                        class="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-red-500">
-                    <div class="flex justify-between text-[10px] text-gray-500 mt-1">
-                        <span>🚨 Stricter</span>
-                        <span class="text-center">Below = ⚠️ Warning | Above = 🌟 Appreciation</span>
-                        <span>💚 Relaxed</span>
-                    </div>
-                </div>
+
 
                 <!-- Summary Chart Area (Neon Graph) -->
                 <div id="analytics-hero" class="hidden flex-col gap-4">
@@ -498,7 +484,7 @@
     </div>
 
     <div id="attendance-dock"
-        class="fixed bottom-0 left-0 right-0 w-full bg-[#101622] border-t border-white/10 p-4 z-[60] md:max-w-3xl lg:max-w-5xl mx-auto shadow-2xl shadow-black transform translate-y-full">
+        class="fixed bottom-0 left-0 right-0 w-full bg-[var(--bg-surface)] border-t border-white/10 p-4 z-[60] md:max-w-3xl lg:max-w-5xl mx-auto shadow-2xl shadow-black transform translate-y-full">
         <div class="flex gap-3">
             <button onclick="saveAttendance('draft')"
                 class="flex-1 h-14 rounded-xl glass-card border-yellow-500/30 text-yellow-400 font-bold active:scale-95 transition flex items-center justify-center gap-2 hover:bg-yellow-500/10"><span

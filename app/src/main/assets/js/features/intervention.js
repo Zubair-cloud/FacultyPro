@@ -180,7 +180,7 @@ Warm Regards,
         // Get threshold from Analytics or localStorage
         const threshold = (window.Analytics && Analytics.getThreshold) 
             ? Analytics.getThreshold() 
-            : (parseInt(localStorage.getItem('appreciation_threshold')) || 75);
+            : (parseInt(localStorage.getItem('appreciation_threshold')) || 80);
         
         // Smart Selection
         let selected;

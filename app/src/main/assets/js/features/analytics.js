@@ -4,8 +4,8 @@
 const Analytics = {
     // Configurable Thresholds (Can be changed via Settings later)
     thresholds: {
-        danger: 75,      // Below 75% = Defaulter (Red)
-        warning: 85,     // 75-85% = At Risk (Orange)
+        danger: 80,      // Below 80% = Defaulter (Red)
+        warning: 85,     // 80-85% = At Risk (Orange)
         star: 90         // Above 90% = Star Performer (Gold)
     },
 
@@ -395,21 +395,12 @@ const Analytics = {
     },
 
     // --- Threshold Management ---
-    updateThreshold(value) {
-        const v = parseInt(value) || 75;
-        localStorage.setItem('appreciation_threshold', v);
-        document.getElementById('threshold-value').innerText = v + '%';
-        UI.showToast(`Threshold set to ${v}%`);
-    },
-
+    // Note: Slider UI removed, threshold is now fixed at 80%
+    
     loadThreshold() {
+        // Returns the stored threshold or default 80%
         const stored = localStorage.getItem('appreciation_threshold');
-        const v = stored ? parseInt(stored) : 80;
-        const slider = document.getElementById('threshold-slider');
-        const display = document.getElementById('threshold-value');
-        if (slider) slider.value = v;
-        if (display) display.innerText = v + '%';
-        return v;
+        return stored ? parseInt(stored) : 80;
     },
 
     getThreshold() {

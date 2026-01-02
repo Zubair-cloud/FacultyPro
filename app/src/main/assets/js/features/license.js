@@ -55,11 +55,11 @@ const License = {
     activate(key) {
         if (this.validateKey(key)) {
             localStorage.setItem(this.STORAGE_KEY, key);
-            UI.showToast("🌟 Premium Activated!");
+            if (window.UI) UI.showToast("🌟 Premium Activated!");
             setTimeout(() => location.reload(), 1000); // Reload to apply all changes cleanly
             return true;
         } else {
-            UI.showToast("❌ Invalid License Key");
+            if (window.UI) UI.showToast("❌ Invalid License Key");
             return false;
         }
     },
@@ -67,7 +67,7 @@ const License = {
     // 🚮 Deactivation (For testing)
     deactivate() {
         localStorage.removeItem(this.STORAGE_KEY);
-        UI.showToast("🔒 License Removed");
+        if (window.UI) UI.showToast("🔒 License Removed");
         setTimeout(() => location.reload(), 1000);
     },
 

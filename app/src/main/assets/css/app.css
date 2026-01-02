@@ -18,6 +18,9 @@ body {
             height: 100dvh;
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
+            /* Smooth Scrolling */
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
             /* Hide Scrollbar */
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE/Edge */
@@ -25,6 +28,17 @@ body {
         
         body::-webkit-scrollbar {
             display: none;
+        }
+        
+        /* Smooth scroll for page containers */
+        .page {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+            overflow-y: auto;
+            height: 100%;
+            position: relative;
         }
 
         .material-symbols-outlined {
@@ -76,7 +90,7 @@ body {
         input:focus,
         textarea:focus {
             border-color: #4A90E2 !important;
-            ring: 0 !important;
+            box-shadow: none !important;
             outline: none !important;
         }
 
