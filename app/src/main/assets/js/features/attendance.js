@@ -84,26 +84,41 @@ const Attendance = {
         const attDock = document.getElementById('attendance-dock');
         
         if (this.viewMode === 'history') {
+            // Show nav buttons and banner for history mode
+            navButtons.classList.remove('hidden');
             banner.classList.remove('hidden');
-            banner.className = 'bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-b border-blue-500/20 p-3 text-center';
             icon.innerText = 'history_edu';
             text.innerText = 'Viewing History (Read-Only)';
-            navButtons.classList.remove('hidden');
             dateInput.style.display = 'none';
             if (attDock) attDock.style.transform = 'translateY(100%)';
         } else if (this.viewMode === 'backlog') {
+            // Show only banner for backlog mode
+            navButtons.classList.add('hidden');
             banner.classList.remove('hidden');
-            banner.className = 'bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-b border-orange-500/20 p-3 text-center';
             icon.innerText = 'edit_calendar';
             text.innerText = 'Adding Backlog Attendance';
-            navButtons.classList.add('hidden');
             dateInput.style.display = 'block';
             if (attDock) attDock.style.transform = 'translateY(0)';
         } else {
+            // Normal mode - hide both
             banner.classList.add('hidden');
             navButtons.classList.add('hidden');
             dateInput.style.display = 'block';
             if (attDock) attDock.style.transform = 'translateY(0)';
+        }
+        
+        // Dynamic padding calculation - measure actual header height
+        this.updateContentPadding();
+    },
+    
+    // Calculate and apply dynamic padding based on header height
+    updateContentPadding() {
+        const header = document.getElementById('att-header');
+        const content = document.getElementById('att-content-scroll');
+        if (header && content) {
+            // Add 16px extra for visual breathing room
+            const padding = header.offsetHeight + 16;
+            content.style.paddingTop = padding + 'px';
         }
     },
 
@@ -277,6 +292,13 @@ const Attendance = {
                     this.startLateEntryTimer();
                 } else {
                     this.stopLateEntryTimer();
+                }
+
+                // Auto-navigate back for final save
+                if (mode === 'final') {
+                    setTimeout(() => {
+                        window.nav('page-home');
+                    }, 1000);
                 }
             };
         };

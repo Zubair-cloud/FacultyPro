@@ -78,52 +78,63 @@
         </div>
 
         <div id="page-attendance" class="page">
+            <!-- FIXED HEADER CONTAINER - Contains everything that should stay at top -->
             <div id="att-header"
-                class="fixed top-0 left-0 right-0 z-[100] bg-[var(--bg-surface)] border-b border-white/10 p-4 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.8)] md:max-w-3xl lg:max-w-5xl mx-auto">
-                <button onclick="nav('page-home')"
-                    class="size-10 flex items-center justify-center rounded-full glass-card text-white hover:bg-white/10 transition"><span
-                        class="material-symbols-outlined">arrow_back</span></button>
-                <div class="text-center date-trigger">
-                    <h2 id="att-title" class="text-lg font-bold text-white">Class</h2>
-                    <div
-                        class="flex items-center justify-center gap-1 text-primary text-xs font-medium bg-primary/10 px-3 py-1 rounded-full mt-1">
-                        <span class="material-symbols-outlined text-[14px]">calendar_month</span>
-                        <span id="att-date-display">Today</span>
+                class="fixed top-0 left-0 right-0 z-[100] bg-[var(--bg-surface)] border-b border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.8)] md:max-w-3xl lg:max-w-5xl mx-auto">
+
+                <!-- Row 1: Back, Title, Spacer -->
+                <div class="p-4 flex items-center justify-between">
+                    <button onclick="nav('page-home')"
+                        class="size-10 flex items-center justify-center rounded-full glass-card text-white hover:bg-white/10 transition"><span
+                            class="material-symbols-outlined">arrow_back</span></button>
+                    <div class="text-center date-trigger">
+                        <h2 id="att-title" class="text-lg font-bold text-white">Class</h2>
+                        <div
+                            class="flex items-center justify-center gap-1 text-primary text-xs font-medium bg-primary/10 px-3 py-1 rounded-full mt-1">
+                            <span class="material-symbols-outlined text-[14px]">calendar_month</span>
+                            <span id="att-date-display">Today</span>
+                        </div>
+                        <input type="date" id="att-date-input" onchange="onDateChange(this)">
                     </div>
-                    <input type="date" id="att-date-input" onchange="onDateChange(this)">
+                    <div class="size-10"></div>
                 </div>
-                <div class="size-10"></div>
-            </div> <!-- Previous/Next Day Navigation (for History Mode) -->
-            <div id="history-nav-buttons"
-                class="hidden sticky top-[130px] z-40 bg-[var(--bg-surface)]/98 backdrop-blur-3xl border-b border-white/10 p-2 flex items-center justify-center gap-3 shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
-                <button onclick="navigatePrevDay()"
-                    class="flex items-center gap-1 px-3 py-2 rounded-lg glass-card text-white hover:bg-white/10 transition">
-                    <span class="material-symbols-outlined text-lg">chevron_left</span>
-                    <span class="text-sm font-medium">Previous Day</span>
-                </button>
-                <button onclick="navigateNextDay()"
-                    class="flex items-center gap-1 px-3 py-2 rounded-lg glass-card text-white hover:bg-white/10 transition">
-                    <span class="text-sm font-medium">Next Day</span>
-                    <span class="material-symbols-outlined text-lg">chevron_right</span>
-                </button>
-            </div>
-            <!-- Mode Indicator Banner -->
-            <div id="mode-banner"
-                class="hidden sticky top-[130px] z-40 bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-3xl border-b border-blue-500/30 p-3 text-center shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
-                <p class="text-white text-sm font-bold flex items-center justify-center gap-2">
-                    <span id="mode-icon" class="material-symbols-outlined text-lg"></span>
-                    <span id="mode-text"></span>
-                </p>
+
+                <!-- Row 2: Previous/Next Day Navigation (for History Mode) -->
+                <div id="history-nav-buttons"
+                    class="hidden bg-[var(--bg-surface)]/98 border-b border-white/10 p-2 flex items-center justify-center gap-3">
+                    <button onclick="navigatePrevDay()"
+                        class="flex items-center gap-1 px-3 py-2 rounded-lg glass-card text-white hover:bg-white/10 transition">
+                        <span class="material-symbols-outlined text-lg">chevron_left</span>
+                        <span class="text-sm font-medium">Previous Day</span>
+                    </button>
+                    <button onclick="navigateNextDay()"
+                        class="flex items-center gap-1 px-3 py-2 rounded-lg glass-card text-white hover:bg-white/10 transition">
+                        <span class="text-sm font-medium">Next Day</span>
+                        <span class="material-symbols-outlined text-lg">chevron_right</span>
+                    </button>
+                </div>
+
+                <!-- Row 3: Mode Indicator Banner -->
+                <div id="mode-banner"
+                    class="hidden bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-b border-blue-500/30 p-3 text-center">
+                    <p class="text-white text-sm font-bold flex items-center justify-center gap-2">
+                        <span id="mode-icon" class="material-symbols-outlined text-lg"></span>
+                        <span id="mode-text"></span>
+                    </p>
+                </div>
+
+                <!-- Row 4: Late Entry Timer (shown during draft mode) -->
+                <div id="late-entry-timer"
+                    class="hidden bg-yellow-500/10 border-b border-yellow-500/30 p-2 text-center">
+                    <p class="text-yellow-400 text-sm font-bold flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-lg">timer</span>
+                        Late Entry Closing in: <span id="timer-display" class="font-mono text-lg">15:00</span>
+                    </p>
+                </div>
             </div>
 
-            <div id="late-entry-timer"
-                class="hidden sticky top-[130px] z-40 bg-yellow-500/10 backdrop-blur-3xl border-b border-yellow-500/30 p-2 text-center shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
-                <p class="text-yellow-400 text-sm font-bold flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined text-lg">timer</span>
-                    Late Entry Closing in: <span id="timer-display" class="font-mono text-lg">15:00</span>
-                </p>
-            </div>
-            <div class="p-4 pb-32 pt-36">
+            <!-- SCROLLABLE CONTENT - Padding will be set dynamically by JS -->
+            <div id="att-content-scroll" class="p-4 pb-32 pt-[120px]">
                 <div class="glass-card p-4 rounded-2xl mb-4 flex justify-between items-center">
                     <div>
                         <p class="text-sm text-gray-400">Total Students</p>
