@@ -1,80 +1,51 @@
-# FacultyPro - Offline Attendance Management System
+# FacultyPro V5.0 - Secure Attendance System
 
-## 📱 What is FacultyPro?
+**Developed by Zinc Labs**
 
-FacultyPro is a smart, offline-first Android application designed specifically for college faculty and teachers. It replaces the traditional pen-and-paper attendance registers with a modern, digital solution that lives right in your pocket.
+FacultyPro is a smart, offline-first Android application designed specifically for college faculty. Version 5.0 introduces a robust "Freemium" model with secure licensing, modular architecture, and dynamic theming.
 
-## 🎯 Why We Made This?
+![FacultyPro Banner](https://img.shields.io/badge/Version-V5.0-gold) ![License](https://img.shields.io/badge/License-MIT-blue)
 
-- **No Internet Required:** Colleges often have dead zones. FacultyPro works 100% offline.
-- **Save Time:** Taking attendance manually takes 10-15 minutes. With FacultyPro, it takes 10 seconds.
-- **Data Ownership:** Your data stays on your device. No cloud servers, no privacy risks.
-- **Student Project:** Created with ❤️ by Zubair, for the academic community.
+## 🚀 New in V5.0 (Zinc Release)
 
----
-
-## 🚀 How to Install
-
-1. **Download the APK:** Go to the [Releases Page](https://github.com/Zubair-cloud/FacultyPro/releases) and download the latest `app-debug.apk`.
-2. **Install:** Tap on the file to install.
-   - _Note:_ If prompted, allow "Install from Unknown Sources" (since this is a private student project, not on the Play Store).
-3. **Open:** Launch the app and you are ready to go!
+- **🔐 Secure Hybrid Licensing:** Replaced insecure master keys with SHA-256 hashed secure keys. Only authorized keys can unlock Premium features.
+- **🎨 Modular Architecture:** The entire app has been refactored into modular components (`js/features/`) for better performance and easier updates.
+- **✨ Dynamic Premium UI:**
+  - **Standard Mode:** Blue/Gray theme with basic features.
+  - **Premium Mode:** Unlocks the "DSU Gold" theme, Analytics Dashboard, and advanced settings upon entering a secure key.
+- **🐛 Bug Fixes:** Resolved attendance page layout overlaps and navigation issues.
 
 ---
 
-## 📖 User Guide: Getting Started
+## 📱 Features
 
-### Step 1: Create Your Profile
-
-- Go to **Settings** (Gear icon).
-- Enter your Name and Subject.
-- Tap **Save**.
-
-### Step 2: Create a Class
-
-- On the **Home** screen, tap **+ New Class**.
-- Enter the Class Name (e.g., "CSE Final Year") and Time.
-- Tap **Create**.
-
-### Step 3: Add Students
-
-- Go to the **Manage** tab.
-- Select your class from the dropdown.
-- You have two options:
-  - **Add Student:** Add one by one (Name, Reg No).
-  - **Bulk Import:** Paste a list of names from Excel/WhatsApp to add everyone at once!
-
-### Step 4: Take Attendance
-
-- Go to **Home** and tap on your Class card.
-- You will see the student list.
-- **Mark All Present:** Tap the button to mark everyone present instantly.
-- **Adjust:** Tap on specific students to mark them Absent (Red) or Late (Yellow).
-- **Save:** Tap **Final Save** to lock it in.
-
-### Step 5: Export Reports
-
-- Go to the **Export** tab.
-- Select the Class and Date Range.
-- Tap **PDF** to generate a printable report or **CSV** for Excel.
+- **No Internet Required:** Works 100% offline using local IndexedDB.
+- **Fast Attendance:** Mark an entire class "Present" in one click.
+- **Smart Analytics:** Track student attendance percentages automatically.
+- **Export Data:** Generate PDF and CSV reports for your records.
+- **Data Backup:** Export/Restore your database (JSON format).
 
 ---
 
-## 🛠️ Key Features
+## 🛠️ How to Install
 
-- **Offline Capability:** Works without Wi-Fi or Data.
-- **Dark Mode:** Easy on the eyes.
-- **History & Backlog:** View past records or add attendance for previous dates.
-- **Data Backup:** Export your entire database to a file and restore it on a new phone.
+1. **Download:** Go to the [Releases Page](../../releases) and download `app-debug.apk`.
+2. **Install:** Tap to install (Enable "Unknown Sources" if prompted).
+3. **Setup:** Create your profile and start adding classes!
 
 ---
 
 ## 👨‍💻 Tech Stack
 
-- **Frontend:** HTML5, TailwindCSS, Vanilla JavaScript
-- **Storage:** IndexedDB (Local Browser Database)
-- **Platform:** Android (WebView)
+- **Developer:** Zinc Labs
+- **Frontend:** HTML5, TailwindCSS, Vanilla JS (Modular)
+- **Security:** SHA-256 Crypto API
+- **Storage:** IndexedDB
 
 ---
 
-_Thank you for using FacultyPro!_
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2026 Zinc Labs
