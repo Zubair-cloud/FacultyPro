@@ -59,6 +59,15 @@ function loadProfile() {
     if (subjectInput) subjectInput.value = subject;
     if (greeting) greeting.innerText = name || 'Faculty';
 
+    // Load Mentor Names (9.1.3)
+    const mentor1Input = document.getElementById('mentor1-name-input');
+    const mentor2Input = document.getElementById('mentor2-name-input');
+    const mentor1Name = localStorage.getItem('mentor1_name') || '';
+    const mentor2Name = localStorage.getItem('mentor2_name') || '';
+    
+    if (mentor1Input) mentor1Input.value = mentor1Name;
+    if (mentor2Input) mentor2Input.value = mentor2Name;
+
     // Update Profile Initials (Settings & Home)
     const initial = document.getElementById('profile-initial');
     const homeInitial = document.getElementById('home-profile-initial');
@@ -67,8 +76,57 @@ function loadProfile() {
     if (initial) initial.innerText = char;
     if (homeInitial) homeInitial.innerText = char;
     
-    // Hardcoded gradients removed to respect Theme Variables (text-[var(--primary)])
+    // Load mentor class display
+    updateMentorClassDisplay();
 }
+
+// --- MENTOR CLASS FUNCTIONS ---
+function updateMentorClassDisplay() {
+    const mentorClassId = localStorage.getItem('mentorClassId');
+    const mentorSection = document.getElementById('home-mentor-section');
+    const mentorClassName = document.getElementById('home-mentor-class-name');
+    const mentorSelect = document.getElementById('set-mentor-class');
+    
+    // Restore dropdown selection in settings
+    if (mentorSelect && mentorClassId) {
+        mentorSelect.value = mentorClassId;
+    }
+    
+    // M4 FIX: Check if classes array exists
+    if (!window.classes || window.classes.length === 0) {
+        console.warn('Classes not loaded yet');
+        return;
+    }
+    
+    // Update home page mentor section
+    if (mentorClassId) { // Removed window.classes check here as it's done above
+        const cls = window.classes.find(c => c.id == mentorClassId);
+        if (cls) {
+            if (mentorSection) mentorSection.classList.remove('hidden');
+            if (mentorClassName) mentorClassName.innerText = cls.name;
+        } else {
+            if (mentorSection) mentorSection.classList.add('hidden');
+        }
+    } else {
+        if (mentorSection) mentorSection.classList.add('hidden');
+    }
+}
+
+function saveMentorClass() {
+    const select = document.getElementById('set-mentor-class');
+    if (select) {
+        const classId = select.value;
+        if (classId) {
+            localStorage.setItem('mentorClassId', classId);
+        } else {
+            localStorage.removeItem('mentorClassId');
+        }
+        updateMentorClassDisplay();
+        if (window.UI) UI.showToast('Mentor Class Saved');
+    }
+}
+window.saveMentorClass = saveMentorClass;
+window.updateMentorClassDisplay = updateMentorClassDisplay;
 
 function saveProfile() {
     const name = document.getElementById('set-name').value;

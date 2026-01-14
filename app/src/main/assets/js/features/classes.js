@@ -116,7 +116,8 @@ const Classes = {
             document.getElementById('hist-class-select'),
             document.getElementById('backlog-class-select'),
             document.getElementById('timing-class-select'),
-            document.getElementById('analytics-class-select')
+            document.getElementById('analytics-class-select'),
+            document.getElementById('set-mentor-class')  // Mentor class dropdown in settings
         ];
         
         const tx = db.transaction('classes', 'readonly');
@@ -124,12 +125,30 @@ const Classes = {
             const classes = e.target.result;
             sel.forEach(s => {
                 if (s) {
-                    s.innerHTML = '<option value="">Select Class</option>';
+                    // Check if it's the mentor class dropdown (needs different placeholder)
+                    const isMentorSelect = s.id === 'set-mentor-class';
+                    s.innerHTML = isMentorSelect 
+                        ? '<option value="">-- Select Your Main Class --</option>'
+                        : '<option value="">Select Class</option>';
                     classes.forEach(c => {
                         s.innerHTML += `<option value="${c.id}">${c.name}</option>`;
                     });
+                    
+                    // Restore mentor class selection
+                    if (isMentorSelect) {
+                        const saved = localStorage.getItem('mentorClassId');
+                        if (saved) s.value = saved;
+                    }
                 }
             });
+            
+            // Update mentor display on home page
+    if (window.updateMentorClassDisplay) {
+        updateMentorClassDisplay(); // M4 FIX: Now called after classes loaded
+    }
+            if (window.updateMentorClassDisplay) {
+                updateMentorClassDisplay();
+            }
         };
     },
 

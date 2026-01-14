@@ -1,0 +1,78 @@
+<div id="page-mentor-panel" class="page pb-24">
+            <header class="sticky top-0 z-40 glass-card border-b border-white/10 px-4 py-3">
+                <div class="flex items-center gap-3">
+                    <button onclick="UI.nav('page-home')"
+                        class="size-10 rounded-xl glass-card flex items-center justify-center text-white hover:bg-white/10">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <div>
+                        <h1 class="text-white font-bold text-lg flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[var(--primary)]">school</span>
+                            My Class
+                        </h1>
+                        <p id="mentor-class-name" class="text-xs text-gray-400">Mentor Panel</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="p-4 space-y-4">
+                <!-- Student Format Section -->
+                <div class="glass-card p-4 rounded-2xl border border-[var(--primary)]/20">
+                    <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[var(--primary)]">groups</span>
+                        Student Roster
+                    </h3>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p id="mentor-student-count" class="text-gray-400 text-sm">0 students</p>
+                            <p class="text-xs text-gray-500">Share this format with faculty</p>
+                        </div>
+                        <button onclick="Mentor.generateFormatToken()"
+                            class="px-4 py-2 rounded-xl bg-[var(--primary)]/10 border border-[var(--primary)]/30 text-[var(--primary)] font-bold text-sm hover:bg-[var(--primary)]/20 transition flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">share</span>
+                            SEND FORMAT
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Import Token Section -->
+                <div class="glass-card p-4 rounded-2xl">
+                    <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-purple-400">download</span>
+                        Import Attendance Token
+                    </h3>
+                    <textarea id="mentor-token-input" rows="3" placeholder="Paste magic token from faculty here..."
+                        class="w-full rounded-xl bg-black/30 border border-white/10 text-white text-xs font-mono px-3 py-2 resize-none focus:border-purple-500 transition"></textarea>
+                    <div class="flex gap-2 mt-3">
+                        <button onclick="Mentor.pasteFromClipboard()"
+                            class="flex-1 py-3 rounded-xl glass-card border border-white/20 text-white font-bold text-sm hover:bg-white/5 transition flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">content_paste</span>
+                            PASTE
+                        </button>
+                        <button onclick="Mentor.importFacultyToken()"
+                            class="flex-1 py-3 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400 font-bold text-sm hover:bg-green-500/30 transition flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            IMPORT
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Today's Imports Log -->
+                <div class="glass-card p-4 rounded-2xl">
+                    <h3 class="text-white font-bold mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-blue-400">history</span>
+                        Today's Imports
+                    </h3>
+                    <div id="mentor-import-log" class="min-h-[80px]">
+                        <p class="text-gray-500 text-sm text-center py-4">No imports today yet</p>
+                    </div>
+                </div>
+
+                <!-- Send Consolidated Report to HOD -->
+                <button onclick="Mentor.generateConsolidatedReport()"
+                    class="w-full py-4 rounded-2xl bg-gradient-to-r from-[var(--primary)] to-[var(--primary-dark)] text-[var(--on-primary)] font-bold shadow-lg shadow-[var(--primary-dim)] hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">send</span>
+                    SEND REPORT TO HOD
+                </button>
+            </div>
+        </div>

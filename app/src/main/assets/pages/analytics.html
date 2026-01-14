@@ -1,0 +1,82 @@
+<div id="page-analytics" class="page pb-24">
+            <div class="p-6 flex flex-col gap-6">
+                <!-- Header -->
+                <div>
+                    <h1 class="text-2xl font-bold text-[var(--primary)] drop-shadow-[0_0_15px_rgba(222,190,99,0.5)]">
+                        Class
+                        Insights</h1>
+                    <p class="text-gray-400 text-sm">Performance & Trends</p>
+                </div>
+
+                <!-- Class Dropdown -->
+                <div class="glass-card p-4 rounded-xl border border-[var(--primary)]/30">
+                    <label class="block text-xs font-bold text-[var(--primary)] uppercase tracking-widest mb-2">Select
+                        Class</label>
+                    <div class="flex gap-2">
+                        <select id="analytics-class-select" onchange="Analytics.loadClassData()"
+                            class="flex-1 bg-black/50 border border-white/10 text-white text-sm rounded-lg p-3 outline-none focus:border-[var(--primary)] transition-colors">
+                            <option value="">Choose a class...</option>
+                        </select>
+                        <button onclick="Analytics.loadClassData()"
+                            class="bg-[var(--primary)] text-black rounded-lg px-4 flex items-center justify-center shadow-[0_0_15px_rgba(222,190,99,0.4)]">
+                            <span class="material-symbols-outlined">refresh</span>
+                        </button>
+                    </div>
+                </div>
+
+
+
+                <!-- Summary Chart Area (Neon Graph) -->
+                <div id="analytics-hero" class="hidden flex-col gap-4">
+                    <div class="glass-card p-6 rounded-2xl border border-[var(--primary)]/20 relative overflow-hidden">
+                        <!-- Glow Effect -->
+                        <div
+                            class="absolute -top-10 -right-10 w-32 h-32 bg-[var(--primary)]/20 blur-[50px] rounded-full">
+                        </div>
+
+                        <div class="relative z-10">
+                            <p class="text-gray-400 text-xs font-medium uppercase tracking-wider">Class Average</p>
+                            <div class="flex items-end gap-2 mt-1">
+                                <h2 id="analytics-avg-percent" class="text-4xl font-bold text-white">0%</h2>
+                                <span class="text-xs text-green-400 mb-2 flex items-center">
+                                    <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                                    <span>Live</span>
+                                </span>
+                            </div>
+
+                            <!-- Placeholder for SVG Graph -->
+                            <div id="analytics-main-graph" class="h-16 mt-4 w-full flex items-end gap-1 opacity-50">
+                                <!-- Bars will be injected via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student Buckets Tabs -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                        <button onclick="Analytics.switchTab('danger')" id="tab-danger"
+                            class="flex-shrink-0 px-4 py-2 rounded-full border border-red-500/50 bg-red-500/10 text-red-400 text-xs font-bold active-tab-danger">
+                            🚨 Defaulters (<span id="count-danger">0</span>)
+                        </button>
+                        <button onclick="Analytics.switchTab('warning')" id="tab-warning"
+                            class="flex-shrink-0 px-4 py-2 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 text-xs font-bold opacity-50">
+                            ⚠️ At Risk (<span id="count-warning">0</span>)
+                        </button>
+                        <button onclick="Analytics.switchTab('star')" id="tab-star"
+                            class="flex-shrink-0 px-4 py-2 rounded-full border border-[var(--primary)]/30 bg-[var(--primary)]/10 text-[var(--primary)] text-xs font-bold opacity-50">
+                            👑 Stars (<span id="count-star">0</span>)
+                        </button>
+                    </div>
+
+                    <!-- Student List Container -->
+                    <div id="analytics-student-list" class="flex flex-col gap-3 min-h-[200px]">
+                        <!-- Students injected here -->
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div id="analytics-empty" class="text-center py-10 opacity-50">
+                    <span class="material-symbols-outlined text-4xl mb-2">bar_chart</span>
+                    <p class="text-sm">Select a class to view insights</p>
+                </div>
+            </div>
+        </div>

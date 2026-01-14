@@ -73,25 +73,56 @@ const Analytics = {
      * 🧠 Internal Math Engine
      * Calculates percentage and assigns status buckets.
      */
+    /**
+     * 🧠 Internal Math Engine
+     * Calculates percentage and assigns status buckets.
+     * Updated for Multi-Subject Support (Phase 6)
+     */
     _computeStats(students, records) {
-        const totalSessions = records.length;
-        if (totalSessions === 0) return this._emptyStats(students);
+        if (records.length === 0) return this._emptyStats(students);
 
         let classTotalPercent = 0;
-
+        
+        // 1. Identify all subjects in this dataset (H6 FIX: Normalize)
+        const uniqueSubjects = [...new Set(records.map(r => (r.subject || 'General').trim()))];
+        
         const processedStudents = students.map(std => {
-            // Count how many times this student was 'Present'
-            let presentCount = 0;
+            // Aggregate counters
+            let overallPresent = 0;
+            let overallTotal = 0;
+            const subjectStats = {};
+            
+            // Initialize subject counters
+            uniqueSubjects.forEach(sub => {
+                subjectStats[sub] = { present: 0, total: 0, percentage: 0 };
+            });
+
+            // Iterate all records
             records.forEach(session => {
-                if (session.records && session.records[std.id] === 'Present') {
-                    presentCount++;
+                const sub = (session.subject || 'General').trim(); // H6 FIX: Normalize
+                const status = session.records && session.records[std.id] ? session.records[std.id] : null;
+                
+                if (status) {
+                    overallTotal++;
+                    subjectStats[sub].total++;
+                    
+                    if (status === 'Present') {
+                        overallPresent++;
+                        subjectStats[sub].present++;
+                    }
                 }
             });
 
-            // Calculate Percentage
-            const percentage = ((presentCount / totalSessions) * 100).toFixed(1);
+            // Calculate Subject Percentages
+            Object.keys(subjectStats).forEach(sub => {
+                const s = subjectStats[sub];
+                s.percentage = s.total > 0 ? ((s.present / s.total) * 100).toFixed(1) : "0.0";
+            });
+
+            // Calculate Overall Percentage
+            const percentage = overallTotal > 0 ? ((overallPresent / overallTotal) * 100).toFixed(1) : "0.0";
             
-            // Bucket Logic
+            // Bucket Logic (Based on Overall)
             let status = 'Good'; 
             if (percentage < this.thresholds.danger) status = 'Danger';
             else if (percentage >= this.thresholds.star) status = 'Star';
@@ -103,10 +134,11 @@ const Analytics = {
                 id: std.id,
                 name: std.name,
                 regNo: std.regNo,
-                presentCount,
-                totalCount: totalSessions,
-                percentage: parseFloat(percentage), // Keep as number for sorting
-                status: status
+                presentCount: overallPresent,
+                totalCount: overallTotal,
+                percentage: parseFloat(percentage),
+                status: status,
+                subjectStats: subjectStats // New Field
             };
         });
 
@@ -115,7 +147,8 @@ const Analytics = {
 
         return {
             classId: students[0]?.classId,
-            totalClasses: totalSessions,
+            totalClasses: records.length, // Total sessions across all subjects
+            uniqueSubjects: uniqueSubjects, // List of subjects
             avgAttendance: students.length ? (classTotalPercent / students.length).toFixed(1) : "0.0",
             students: processedStudents
         };
@@ -125,8 +158,14 @@ const Analytics = {
         return {
             classId: students[0]?.classId,
             totalClasses: 0,
+            uniqueSubjects: [],
             avgAttendance: 0,
-            students: students.map(s => ({ ...s, percentage: 0, status: 'Danger' }))
+            students: students.map(s => ({ 
+                ...s, 
+                percentage: 0, 
+                status: 'Danger',
+                subjectStats: {} 
+            }))
         };
     },
 
@@ -315,9 +354,39 @@ const Analytics = {
         
         this.renderHistoryList(history);
         this.renderSparkline(history, borderColor);
+        
+        // 4. Render Subject Breakdown (Phase 6)
+        if (student.subjectStats) {
+            this.renderSubjectStats(student.subjectStats);
+        }
 
-        // 3. Open Modal
+        // 5. Open Modal
         UI.openModal('modal-analytics-profile');
+    },
+
+    renderSubjectStats(stats) {
+        const container = document.getElementById('anl-subject-list');
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        Object.entries(stats).forEach(([subject, data]) => {
+            const percent = data.percentage; // string "80.0"
+            const color = parseFloat(percent) < 80 ? 'text-red-400' : 'text-green-400';
+            const barColor = parseFloat(percent) < 80 ? 'bg-red-500' : 'bg-green-500';
+            
+            container.innerHTML += `
+                <div class="mb-3 last:mb-0">
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-gray-300">${subject}</span>
+                        <span class="${color} font-bold">${percent}% <span class="text-gray-600 font-normal">(${data.present}/${data.total})</span></span>
+                    </div>
+                    <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div class="h-full ${barColor} transition-all duration-500" style="width: ${percent}%"></div>
+                    </div>
+                </div>
+            `;
+        });
     },
 
     renderHistoryList(history) {
@@ -343,16 +412,28 @@ const Analytics = {
         });
     },
 
+    // Render attendance trend sparkline
     renderSparkline(history, color) {
         const container = document.getElementById('anl-sparkline-container');
+        if (!container) return;
+        
+        // M3 FIX: Check for zero width
+        const w = container.clientWidth || 300;
+        const h = container.clientHeight || 96; // Adjusted height slightly
+        
+        if (w < 50) {
+            container.innerHTML = '<p class="text-xs text-gray-500 text-center p-4">Container too small</p>';
+            return;
+        }
+
         if (history.length < 2) {
              container.innerHTML = '<p class="text-[10px] text-gray-600 w-full text-center">Not enough data</p>';
              return;
         }
 
         // SVG Logic
-        const w = container.clientWidth || 300;
-        const h = container.clientHeight || 100;
+        // const w = container.clientWidth || 300; // This line was duplicated in the instruction, removing it.
+        // const h = container.clientHeight || 100; // This line was duplicated and modified, keeping the modified one above.
         const pts = history.map((d, i) => {
             const x = (i / (history.length - 1)) * w;
             const y = h - ((d.trend / 100) * h);

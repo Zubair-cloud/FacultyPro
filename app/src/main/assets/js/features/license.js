@@ -3,17 +3,10 @@
 
 const License = {
     // 🔐 Configuration
-    // REPLACED: Master Key removed. Using Secure Hashes.
-    VALID_HASHES: [
-        "dda5d319c55d78fbe7ca3bc8176eba8a51fad61e558e95c952f574016c21b30b", // ZINC-DSU-X7A9B2C
-        "8d7f7dfb72016466b72d0f89c432679f6645a0347b55a47889bc0a7842903e9c", // ZINC-DSU-Y4K8M1P
-        "7fa8ade9679608c5c5a3ea728df2253fd85270d8111dfe75868a82c1aaea61af", // ZINC-DSU-W3R5T9L
-        "f58b5e11df716c3b4fe709f15655aab670045afd2f922a4a7303e05e9919fa09", // ZINC-DSU-Q2N6J4H
-        "178e06646bc83b6160bda5a8b27f98a5f6fcb9ed7dab5c2666a61255b7a767e5"  // ZINC-DSU-V8D5F3S
-    ],
-    STORAGE_KEY: "facultypro_license",
+    STORAGE_KEY: "facultypro_license_token", // Stores the offline token
+    USER_EMAIL_KEY: "facultypro_user_email",
     
-    // 🎨 Theme Definitions
+    // 🎨 Theme Definitions (Keep existing themes)
     THEMES: {
         DEFAULT: {
             "--primary": "#3B82F6",         // Blue 500
@@ -32,82 +25,281 @@ const License = {
             "--bg-surface": "#101010",      // Deep Black
             "--bg-glow-secondary": "rgba(93, 37, 13, 0.3)", // Maroon Glow
             "--accent-text": "#DEBE63"      // Gold
+        },
+        HOD: {
+            "--primary": "#F97316",         // Orange 500
+            "--primary-dim": "rgba(249, 115, 22, 0.2)",
+            "--primary-dark": "#C2410C",    // Orange 700
+            "--on-primary": "#FFFFFF",      // White Text
+            "--bg-surface": "#0C0A09",      // Warm Black
+            "--bg-glow-secondary": "rgba(124, 45, 18, 0.2)", // Rust Glow
+            "--accent-text": "#FDBA74"      // Orange 300
         }
     },
 
     // 🚀 Initialization
     async init() {
-        console.log("🔐 License Engine: Initializing (Async)...");
-        const savedKey = localStorage.getItem(this.STORAGE_KEY);
+        console.log("🔐 License Engine: Initializing...");
         
-        // Need to await validation since it uses crypto.subtle
-        if (await this.validateKey(savedKey)) {
-            console.log("🌟 Premium License Active");
-            this.applyTheme(this.THEMES.PREMIUM);
-            this.unlockFeatures(true);
+        // 1. Check Offline Token first (Fastest "Green Signal")
+        const offlineToken = localStorage.getItem(this.STORAGE_KEY);
+        if (offlineToken) {
+            console.log("🌟 Offline Token Found. Activating Premium...");
+            
+            // H8 FIX: Properly detect role
+            const role = this.extractRoleFromToken(offlineToken);
+            localStorage.setItem('facultypro_user_role', role);
+            
+            this.activatePremiumUI();
+            
+            // Background Verify if Internet is available
+            if (navigator.onLine && window.FIREBASE_API) {
+                this.backgroundReverify();
+            }
         } else {
-            console.log("🔒 Standard License Active");
+            console.log("🔒 No Token. Standard Mode.");
+            localStorage.setItem('facultypro_user_role', 'FACULTY'); // Default
             this.applyTheme(this.THEMES.DEFAULT);
             this.unlockFeatures(false);
+            this.renderLoginUI(); // Show "Login" button instead of Key Input
         }
-    },
-
-    // 🔑 Secure Validation using SHA-256
-    async validateKey(key) {
-        if (!key) return false;
-        
-        try {
-            const hash = await this.sha256(key.trim());
-            console.log(`🔍 Checking Hash: ${hash.substring(0, 8)}...`);
-            
-            if (this.VALID_HASHES.includes(hash)) {
-                return true;
-            }
-        } catch (e) {
-            console.error("Hash calculation failed", e);
-        }
-        
-        return false;
     },
     
-    // Helper: SHA-256 Hashing
-    async sha256(message) {
-        const msgBuffer = new TextEncoder().encode(message);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        return hashHex;
+    // H8 FIX: Helper to extract role from token
+    extractRoleFromToken(token) {
+        try {
+            // Token format: PREMIUM_TOKEN_${btoa(key)}_${timestamp}
+            const parts = token.split('_');
+            if (parts.length >= 3 && parts[0] === 'PREMIUM' && parts[1] === 'TOKEN') {
+                const encodedKey = parts[2];
+                const decodedKey = atob(encodedKey);
+                
+                // Check actual key prefix (including TEST keys)
+                if (decodedKey.startsWith('ZINC-HOD-') || decodedKey.startsWith('TEST-HOD-')) {
+                    return 'HOD';
+                } else if (decodedKey.startsWith('ZINC-DSU-') || decodedKey.startsWith('TEST-FACULTY-')) {
+                    return 'FACULTY';
+                }
+            }
+        } catch (e) {
+            console.error('Error extracting role from token:', e);
+        }
+        return 'FACULTY'; // Default fallback
     },
 
-    // 🔓 Activation Logic
-    async activate(inputKey) {
-        if (await this.validateKey(inputKey)) {
-            localStorage.setItem(this.STORAGE_KEY, inputKey.trim());
-            if (window.UI) UI.showToast("🌟 Premium License Activated!");
-            this.applyTheme(this.THEMES.PREMIUM);
-            this.unlockFeatures(true);
-            
-            // Reload after short delay to refresh all UI components fully
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-            return true;
-        } else {
-            if (window.UI) UI.showToast("❌ Invalid License Key");
-            return false;
+    // 🔄 Background Re-verification
+    async backgroundReverify() {
+        const email = localStorage.getItem(this.USER_EMAIL_KEY);
+        if (!email) return;
+
+        console.log("☁️ Background Verifying License for:", email);
+        const result = await window.FIREBASE_API.checkLicense(email);
+        
+        if (result.status === 'active') {
+            console.log("✅ License Valid form Server.");
+        } else if (result.status === 'unlicensed') {
+            console.warn("⚠️ Server says Unlicensed! Revoking...");
+            // Optional: this.deactivate(); // For now, let's be lenient and not revoke immediately to avoid accidents
         }
+    },
+
+    // 🖥️ UI: Render Login Button (replaces the old Key Input)
+    renderLoginUI() {
+        const container = document.getElementById('license-input-group');
+        if (container) {
+            container.innerHTML = `
+                <button onclick="License.handleGoogleLogin()" 
+                    class="w-full py-3 rounded-xl bg-white text-black font-bold text-sm hover:opacity-90 active:scale-95 transition flex items-center justify-center gap-2">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
+                    Sign in with DSU Email
+                </button>
+                <p class="text-[10px] text-center text-gray-500 mt-2">Sign in to verify your faculty license.</p>
+                
+                <!-- TEST MODE: Quick License Buttons -->
+                <div class="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+                    <p class="text-[10px] text-yellow-400 font-bold mb-2">🧪 TEST MODE</p>
+                    <div class="flex gap-2">
+                        <button onclick="License.activateTestLicense('FACULTY')" class="flex-1 py-2 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold">Faculty 1</button>
+                        <button onclick="License.activateTestLicense('FACULTY')" class="flex-1 py-2 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold">Faculty 2</button>
+                        <button onclick="License.activateTestLicense('HOD')" class="flex-1 py-2 bg-orange-500/20 border border-orange-500/30 text-orange-400 rounded-lg text-xs font-bold">HOD</button>
+                    </div>
+                </div>
+            `;
+            container.classList.remove('hidden');
+        }
+    },
+    
+    // TEST MODE: Activate test license
+    activateTestLicense(role) {
+        const key = role === 'HOD' ? 'TEST-HOD-001' : 'TEST-FACULTY-' + Date.now();
+        console.log('🧪 Activating test license:', role);
+        
+        localStorage.setItem('facultypro_user_role', role);
+        this.saveOfflineToken(key);
+        this.activatePremiumUI();
+        UI.showToast(`✅ Test ${role} License Activated`);
+        
+        setTimeout(() => location.reload(), 800);
+    },
+
+    // 🟢 Action: Handle Google Login
+    async handleGoogleLogin() {
+        if (window.UI) UI.showToast("⏳ Signing in...");
+        
+        if (!window.FIREBASE_API) {
+            alert("Firebase not loaded! Check internet.");
+            return;
+        }
+
+        // Setup Listener BEFORE calling login
+        const loginListener = (e) => {
+            const result = e.detail;
+            if (result.success) {
+                console.log("Logged in:", result.email);
+                localStorage.setItem(this.USER_EMAIL_KEY, result.email);
+                
+                if (window.UI) UI.showToast(`Welcome, ${result.name}`);
+                
+                // Check License
+                this.checkServerLicense(result.email);
+            } else {
+                alert("Login Failed: " + result.error);
+            }
+            // cleanup
+            window.removeEventListener('firebase-login-success', loginListener);
+        };
+        window.addEventListener('firebase-login-success', loginListener);
+
+        const result = await window.FIREBASE_API.loginWithGoogle();
+        
+        // If not pending (e.g. browser fallback), handle immediately. 
+        // If pending, the listener above will handle it.
+        if (!result.pending) {
+            window.removeEventListener('firebase-login-success', loginListener); // remove to avoid double firing if fallback works
+            if (result.success) {
+                 localStorage.setItem(this.USER_EMAIL_KEY, result.email);
+                 this.checkServerLicense(result.email);
+            } else {
+                 alert("Login Failed: " + result.error);
+            }
+        }
+    },
+
+    // ☁️ Check License on Server
+    async checkServerLicense(email) {
+        const container = document.getElementById('license-input-group');
+        if(container) container.innerHTML = `<p class="text-white text-center animate-pulse">Checking License...</p>`;
+
+        const check = await window.FIREBASE_API.checkLicense(email);
+
+        if (check.status === 'active') {
+             // Success!
+             this.saveOfflineToken(check.key);
+             
+             // Role Detection
+             if (check.key.startsWith('ZINC-HOD')) {
+                 localStorage.setItem('facultypro_user_role', 'HOD');
+             } else {
+                 localStorage.setItem('facultypro_user_role', 'FACULTY');
+             }
+             
+             this.activatePremiumUI();
+             if (window.UI) UI.showToast("🌟 License Verified! Premium Active.");
+        } else {
+            // Unlicensed -> Show Key Input
+            this.renderClaimUI(email);
+        }
+    },
+
+    // 🖥️ UI: Key Claim Form
+    renderClaimUI(email) {
+        const container = document.getElementById('license-input-group');
+        if (container) {
+            container.innerHTML = `
+                <div class="space-y-2">
+                    <p class="text-xs text-gray-400">Signed in as: <span class="text-white font-bold">${email}</span></p>
+                    <input id="new-license-key" type="text" placeholder="Enter License Key (e.g. ABC-123)" 
+                        class="w-full rounded-xl bg-[var(--bg-surface)] border border-white/10 text-white text-sm px-4 py-3 focus:border-[var(--primary)] transition">
+                    <button onclick="License.claimKey('${email}')" 
+                        class="w-full py-3 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-bold text-sm hover:opacity-90 active:scale-95 transition shadow-[0_0_15px_var(--primary-dim)]">
+                        ACTIVATE LICENSE
+                    </button>
+                </div>
+            `;
+        }
+    },
+
+    // 🟢 Action: Claim Key
+    async claimKey(email) {
+        const keyInput = document.getElementById('new-license-key');
+        const key = keyInput.value.trim();
+        
+        if (!key) return;
+
+        if (window.UI) UI.showToast("⏳ Verifying Key...");
+        
+        // Pass basic profile info if available
+        const profile = {
+             name: document.getElementById('set-name')?.value || "Faculty",
+             phone: document.getElementById('set-phone')?.value || ""
+        };
+
+        const result = await window.FIREBASE_API.claimLicense(email, key, profile);
+        
+        if (result.success) {
+            this.saveOfflineToken(key);
+            
+            // Role Detection
+            if (key.startsWith('ZINC-HOD')) {
+                localStorage.setItem('facultypro_user_role', 'HOD');
+            } else {
+                localStorage.setItem('facultypro_user_role', 'FACULTY');
+            }
+            
+            this.activatePremiumUI();
+            if (window.UI) UI.showToast("🎉 License Claimed Successfully!");
+        } else {
+            if (window.UI) UI.showToast("❌ Error: " + result.error);
+        }
+    },
+
+    // 💾 Save "Green Signal" Token
+    saveOfflineToken(key) {
+        // In real world, encrypt this. For now, we store a simple hash-like string
+        const token = `PREMIUM_TOKEN_${btoa(key)}_${Date.now()}`;
+        localStorage.setItem(this.STORAGE_KEY, token);
+    },
+
+    // 🔓 Unlock Premium UI
+    activatePremiumUI() {
+        const role = localStorage.getItem('facultypro_user_role') || 'FACULTY';
+        
+        if (role === 'HOD') {
+            this.applyTheme(this.THEMES.HOD);
+        } else {
+            this.applyTheme(this.THEMES.PREMIUM);
+        }
+        
+        this.unlockFeatures(true, role);
+        
+        // Hide Login UI
+        const container = document.getElementById('license-input-group');
+        if (container) container.classList.add('hidden');
     },
 
     // 🚫 Deactivation
     deactivate() {
         localStorage.removeItem(this.STORAGE_KEY);
+        localStorage.removeItem(this.USER_EMAIL_KEY);
+        localStorage.removeItem('facultypro_user_role');
         this.applyTheme(this.THEMES.DEFAULT);
         this.unlockFeatures(false);
-        if (window.UI) UI.showToast("🔒 License Deactivated");
+        this.renderLoginUI();
+        if (window.UI) UI.showToast("🔒 License Removed");
         setTimeout(() => location.reload(), 500);
     },
 
-    // 🎨 Theme Switcher
+    // 🎨 Theme Switcher (Same as before)
     applyTheme(theme) {
         const root = document.documentElement;
         for (const [key, value] of Object.entries(theme)) {
@@ -116,68 +308,65 @@ const License = {
     },
 
     // 🛠️ Feature Toggles
-    unlockFeatures(isPremium) {
+    unlockFeatures(isPremium, role = 'FACULTY') {
         const analyticsNav = document.getElementById('nav-analytics');
-        const settingsLock = document.getElementById('settings-lock-message');
-        
-        // License UI Elements
-        const licenseInputGroup = document.getElementById('license-input-group');
         const licenseRemoveBtn = document.getElementById('license-remove-btn');
         const licenseBadge = document.getElementById('license-status-badge');
-        
-        // Home Logo Strategy
         const homeLogoGeneric = document.getElementById('home-logo-generic');
         const homeLogoDSU = document.getElementById('home-logo-dsu');
+        
+        // HOD Specifics
+        const hodNav = document.getElementById('nav-hod-panel');
+        const mentorSection = document.getElementById('home-mentor-section');
 
         if (isPremium) {
-            // Unlock Analytics
             if (analyticsNav) analyticsNav.classList.remove('hidden');
             
-            // Unlock Intervention Settings
+            // Show HOD Nav if role is HOD
+            if (role === 'HOD') {
+                if (hodNav) hodNav.classList.remove('hidden');
+                // HOD can also be a mentor for their own class, so keep mentor section logic dynamic
+            } else {
+                if (hodNav) hodNav.classList.add('hidden');
+            }
+            
             const templateBtn = document.getElementById('btn-intervention-templates');
             if (templateBtn) {
                 templateBtn.disabled = false;
                 templateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             }
-            
-            // Update License UI -> Hide Input, Show Remove, Update Badge
-            if (licenseInputGroup) licenseInputGroup.classList.add('hidden');
             if (licenseRemoveBtn) licenseRemoveBtn.classList.remove('hidden');
             if (licenseBadge) {
-                licenseBadge.innerText = "PREMIUM";
-                licenseBadge.className = "px-3 py-1 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)] text-xs text-[var(--primary)] font-bold tracking-wider shadow-[0_0_10px_var(--primary-dim)]";
+                licenseBadge.innerText = role === 'HOD' ? "HOD ACCESS" : "PREMIUM";
+                licenseBadge.className = role === 'HOD' 
+                    ? "px-3 py-1 rounded-lg bg-orange-500/10 border border-orange-500 text-xs text-orange-500 font-bold tracking-wider shadow-[0_0_10px_orange]"
+                    : "px-3 py-1 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)] text-xs text-[var(--primary)] font-bold tracking-wider shadow-[0_0_10px_var(--primary-dim)]";
             }
-            
-            // Show DSU Logo
             if (homeLogoDSU) homeLogoDSU.classList.remove('hidden');
             if (homeLogoGeneric) homeLogoGeneric.classList.add('hidden');
 
         } else {
-            // Lock Analytics
             if (analyticsNav) analyticsNav.classList.add('hidden');
-            
-            // Lock Intervention Settings
+            if (hodNav) hodNav.classList.add('hidden');
             const templateBtn = document.getElementById('btn-intervention-templates');
             if (templateBtn) {
                 templateBtn.disabled = true;
                 templateBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
-            
-            // Update License UI -> Show Input, Hide Remove, Reset Badge
-            if (licenseInputGroup) licenseInputGroup.classList.remove('hidden');
             if (licenseRemoveBtn) licenseRemoveBtn.classList.add('hidden');
             if (licenseBadge) {
                 licenseBadge.innerText = "STANDARD";
                 licenseBadge.className = "px-3 py-1 rounded-lg bg-gray-800 border border-gray-700 text-xs text-gray-400 font-mono tracking-wider";
             }
-            
-            // Show Generic Profile Initial
             if (homeLogoDSU) homeLogoDSU.classList.add('hidden');
             if (homeLogoGeneric) homeLogoGeneric.classList.remove('hidden');
         }
     }
 };
 
-// Expose to window for inline HTML calls AND global access
+// Expose to window
 window.License = License;
-window.activateLicense = (key) => License.activate(key);
+// Initialize somewhat early or wait for load
+window.addEventListener('DOMContentLoaded', () => {
+    License.init();
+});

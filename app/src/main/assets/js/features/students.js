@@ -6,7 +6,7 @@ const Students = {
     activeStudentForDetails: null,
     editingDetailIndex: -1,
 
-    // Load students for manage page
+    // Load students for manage page                      
     loadManageList() {
         const clsId = document.getElementById('manage-class-select').value;
         const list = document.getElementById('manage-list');

@@ -2,10 +2,41 @@
 // Extracted from attendance.html for modular architecture
 
 const UI = {
-    // Navigation between pages
-    nav(pageId) {
+    // Track loaded pages (home is inline, already loaded)
+    loadedPages: new Set(['page-home']),
+    
+    // Load a page dynamically via fetch
+    async loadPage(pageId) {
+        if (this.loadedPages.has(pageId)) return true;
+        
+        const pageName = pageId.replace('page-', '');
+        try {
+            const response = await fetch(`pages/${pageName}.html`);
+            if (response.ok) {
+                const html = await response.text();
+                const container = document.getElementById('page-container');
+                if (container) {
+                    container.insertAdjacentHTML('beforeend', html);
+                }
+                this.loadedPages.add(pageId);
+                console.log(`✅ Loaded page: ${pageId}`);
+                return true;
+            }
+        } catch (e) {
+            console.error(`Failed to load ${pageId}:`, e);
+        }
+        return false;
+    },
+
+    // Navigation between pages (now async for dynamic loading)
+    async nav(pageId) {
+        // Load page if not already loaded
+        await this.loadPage(pageId);
+        
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) targetPage.classList.add('active');
+        
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         const navId = 'nav-' + pageId.replace('page-', '');
         const navEl = document.getElementById(navId);
@@ -27,7 +58,7 @@ const UI = {
                 if (typeof updateModeBanner === 'function') updateModeBanner();
             }
             bottomNav.style.transform = 'translateY(0)'; 
-            attDock.style.transform = 'translateY(100%)'; 
+            if (attDock) attDock.style.transform = 'translateY(100%)'; 
         }
         if (pageId === 'page-settings') bottomNav.style.transform = 'translateY(100%)';
     },
@@ -84,8 +115,8 @@ const UI = {
 // Export to global scope
 window.UI = UI;
 
-// For backward compatibility, expose functions globally
-window.nav = UI.nav;
+// For backward compatibility, expose functions globally (with proper binding)
+window.nav = (pageId) => UI.nav(pageId);
 window.showToast = UI.showToast;
 window.openModal = UI.openModal;
 window.closeModal = UI.closeModal;

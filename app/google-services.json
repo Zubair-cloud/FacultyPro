@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "241911004176",
+    "project_id": "facultypro-licensing",
+    "storage_bucket": "facultypro-licensing.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241911004176:android:c5469d54eaf694cb585e95",
+        "android_client_info": {
+          "package_name": "com.zinclabs.facultypro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "241911004176-oufmt390pan0tlhjnlj0qpohl68dm7ut.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zinclabs.facultypro",
+            "certificate_hash": "a0ea930820760236f6e89eb49350dd75e241464b"
+          }
+        },
+        {
+          "client_id": "241911004176-6oa5u7f1468js5utn9uuqgj0n3h29ijr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHdVLQeN4-8omKAOE1SZDZffpg3KMTajw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "241911004176-6oa5u7f1468js5utn9uuqgj0n3h29ijr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
