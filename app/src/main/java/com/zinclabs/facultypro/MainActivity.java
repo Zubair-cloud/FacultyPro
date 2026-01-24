@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-        myWebView.loadUrl("file:///android_asset/index.html");
+        myWebView.loadUrl("file:///android_asset/index_modular.html");
     }
 
     // --- HANDLE SIGN IN RESULT ---
@@ -201,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
                 myWebView.clearHistory();
                 WebStorage.getInstance().deleteAllData();
                 Toast.makeText(mContext, "App data has been reset.", Toast.LENGTH_SHORT).show();
-                myWebView.loadUrl("file:///android_asset/index.html");
+                myWebView.loadUrl("file:///android_asset/index_modular.html");
             });
         }
 

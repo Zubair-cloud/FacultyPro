@@ -1007,6 +1007,115 @@
     </div>
 
 
+
+    <section id="page-hod-students" class="page hidden min-h-screen bg-[var(--bg-primary)] pb-32">
+        <div class="safe-area-top"></div>
+
+        <!-- Header -->
+        <div class="p-4 flex items-center gap-3 border-b border-white/10">
+            <button onclick="UI.nav('page-hod-panel')"
+                class="size-10 rounded-full bg-white/5 flex items-center justify-center">
+                <span class="material-symbols-outlined text-white">arrow_back</span>
+            </button>
+            <div class="flex-1">
+                <h2 id="hod-students-class-name" class="text-white font-bold text-lg">Class A14</h2>
+                <p id="hod-students-mentor-info" class="text-xs text-gray-500">Mentors: Loading...</p>
+            </div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="p-4 flex items-center justify-between bg-white/5">
+            <div id="hod-students-count" class="text-sm text-gray-400">
+                <span class="text-white font-bold">0</span> students
+            </div>
+            <select id="hod-students-sort" onchange="HOD.sortStudentList(this.value)"
+                class="bg-black/30 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white">
+                <option value="lowest">Lowest First</option>
+                <option value="highest">Highest First</option>
+                <option value="name">Alphabetical</option>
+                <option value="regNo">By Reg. No</option>
+            </select>
+        </div>
+
+        <!-- Student List -->
+        <div id="hod-students-list" class="p-4 space-y-2">
+            <div class="text-center text-gray-500 py-8">Loading students...</div>
+        </div>
+    </section>
+
+    <!-- HOD Student Detail Modal (Phase 9.4) -->
+    <div id="modal-hod-student-detail"
+        class="modal-overlay fixed inset-0 z-[70] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div
+            class="modal-content w-full max-w-sm rounded-2xl glass-card border border-white/10 bg-[#1a1f2c] max-h-[90vh] overflow-y-auto">
+
+            <!-- Header -->
+            <div class="p-5 border-b border-white/10 bg-white/5">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div id="hod-detail-avatar"
+                            class="size-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
+                            A
+                        </div>
+                        <div>
+                            <h3 id="hod-detail-name" class="text-white font-bold text-lg">Student Name</h3>
+                            <p id="hod-detail-regno" class="text-sm text-gray-400">REG001</p>
+                        </div>
+                    </div>
+                    <button onclick="UI.closeModal('modal-hod-student-detail')"
+                        class="size-8 rounded-full bg-white/10 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-gray-400 text-lg">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overall Attendance -->
+            <div class="p-5 border-b border-white/10">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-xs mb-1">Overall Attendance</p>
+                        <p id="hod-detail-overall" class="text-4xl font-bold text-white">85%</p>
+                    </div>
+                    <div id="hod-detail-status"
+                        class="px-3 py-1.5 rounded-lg text-sm font-bold bg-green-500/20 text-green-400">
+                        HEALTHY
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject Breakdown -->
+            <div class="p-5 border-b border-white/10">
+                <h4 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-purple-400">bar_chart</span>
+                    Subject Breakdown
+                </h4>
+                <div id="hod-detail-subjects" class="space-y-3">
+                    <!-- Subject bars rendered here -->
+                </div>
+            </div>
+
+            <!-- Last 10 Days Timeline -->
+            <div class="p-5 border-b border-white/10">
+                <h4 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-400">calendar_month</span>
+                    Last 10 Days
+                </h4>
+                <div id="hod-detail-timeline" class="flex gap-1 flex-wrap">
+                    <!-- Timeline dots rendered here -->
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="p-5">
+                <button onclick="HOD.generateInterventionLetter()"
+                    class="w-full py-3 rounded-xl bg-red-500 text-white font-bold flex items-center justify-center gap-2 hover:bg-red-600 transition">
+                    <span class="material-symbols-outlined">picture_as_pdf</span>
+                    Generate Intervention Letter
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast"
         class="fixed top-6 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-3 rounded-full bg-white/10 backdrop-blur-md border border-white/10 px-5 py-3 text-sm font-semibold text-white shadow-xl opacity-0 pointer-events-none transition-all transform translate-y-[-20px]">
         <span class="material-symbols-outlined text-green-400">check_circle</span><span id="toast-msg">Success</span>
@@ -1301,12 +1410,12 @@
 
 
     <!-- HOD Student List Page (Phase 9.3) -->
-    <section id="page-hod-students" class="page hidden min-h-screen bg-[var(--bg-primary)] pb-32">
+    <section id="page-hod-students" class="page min-h-screen bg-[var(--bg-primary)] pb-32">
         <div class="safe-area-top"></div>
-        
+
         <!-- Header -->
         <div class="p-4 flex items-center gap-3 border-b border-white/10">
-            <button onclick="UI.nav('page-hod-panel')" 
+            <button onclick="UI.nav('page-hod-panel')"
                 class="size-10 rounded-full bg-white/5 flex items-center justify-center">
                 <span class="material-symbols-outlined text-white">arrow_back</span>
             </button>
@@ -1315,7 +1424,7 @@
                 <p id="hod-students-mentor-info" class="text-xs text-gray-500">Mentors: Loading...</p>
             </div>
         </div>
-        
+
         <!-- Stats Bar -->
         <div class="p-4 flex items-center justify-between bg-white/5">
             <div id="hod-students-count" class="text-sm text-gray-400">
@@ -1329,7 +1438,7 @@
                 <option value="regNo">By Reg. No</option>
             </select>
         </div>
-        
+
         <!-- Student List -->
         <div id="hod-students-list" class="p-4 space-y-2">
             <div class="text-center text-gray-500 py-8">Loading students...</div>
@@ -1340,13 +1449,14 @@
     <!-- HOD Student Detail Modal (Phase 9.4) -->
     <div id="modal-hod-student-detail"
         class="modal-overlay fixed inset-0 z-[70] hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-        <div class="modal-content w-full max-w-sm rounded-2xl glass-card border border-white/10 bg-[#1a1f2c] max-h-[90vh] overflow-y-auto">
-            
+        <div
+            class="modal-content w-full max-w-sm rounded-2xl glass-card border border-white/10 bg-[#1a1f2c] max-h-[90vh] overflow-y-auto">
+
             <!-- Header -->
             <div class="p-5 border-b border-white/10 bg-white/5">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div id="hod-detail-avatar" 
+                        <div id="hod-detail-avatar"
                             class="size-14 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
                             A
                         </div>
@@ -1361,7 +1471,7 @@
                     </button>
                 </div>
             </div>
-            
+
             <!-- Overall Attendance -->
             <div class="p-5 border-b border-white/10">
                 <div class="flex items-center justify-between">
@@ -1369,13 +1479,13 @@
                         <p class="text-gray-400 text-xs mb-1">Overall Attendance</p>
                         <p id="hod-detail-overall" class="text-4xl font-bold text-white">85%</p>
                     </div>
-                    <div id="hod-detail-status" 
+                    <div id="hod-detail-status"
                         class="px-3 py-1.5 rounded-lg text-sm font-bold bg-green-500/20 text-green-400">
                         HEALTHY
                     </div>
                 </div>
             </div>
-            
+
             <!-- Subject Breakdown -->
             <div class="p-5 border-b border-white/10">
                 <h4 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
@@ -1386,7 +1496,7 @@
                     <!-- Subject bars rendered here -->
                 </div>
             </div>
-            
+
             <!-- Last 10 Days Timeline -->
             <div class="p-5 border-b border-white/10">
                 <h4 class="text-white font-bold text-sm mb-3 flex items-center gap-2">
@@ -1397,7 +1507,7 @@
                     <!-- Timeline dots rendered here -->
                 </div>
             </div>
-            
+
             <!-- Generate Letter Button -->
             <div class="p-5">
                 <button onclick="HOD.generateInterventionLetter()"

@@ -448,11 +448,40 @@ const HOD = {
             
             for (const [subject, subData] of Object.entries(subjects)) {
                 // H1 FIX: Validate subject has records
+                // H1 FIX: Validate subject has records
                 if (!subData.records || Object.keys(subData.records).length === 0) {
                     console.warn(`Skipping empty subject: ${subject}`);
                     continue;
                 }
-                await this.saveRecord(data.classId, data.date, subject, subData);
+
+                // ID MAPPING FIX: Translate Token IDs to RegNos
+                const idMap = {};
+                if (data.students) {
+                    data.students.forEach(s => idMap[s.id] = s.regNo);
+                }
+                
+                const translatedRecords = {};
+                for (const [key, value] of Object.entries(subData.records)) {
+                    // Try to map key (ID) to RegNo, otherwise keep key
+                    const regNo = idMap[key] || key;
+                    
+                    if (count === 0 && Object.keys(translatedRecords).length < 3) {
+                         console.log(`🔍 Mapping ID '${key}' -> RegNo '${regNo}'`);
+                    }
+
+                    // NORMALIZE STATUS: Support 0/1 or "Present"/"Absent"
+                    let status = value;
+                    if (status === 1 || status === '1') status = 'Present';
+                    else if (status === 0 || status === '0') status = 'Absent';
+                    
+                    translatedRecords[regNo] = status;
+                }
+                
+                // Update subData with translated records
+                // Clone subData to avoid mutating original
+                const newSubData = {...subData, records: translatedRecords};
+                
+                await this.saveRecord(data.classId, data.date, subject, newSubData);
                 count++;
             }
             
@@ -568,15 +597,27 @@ const HOD = {
         const nameEl = document.getElementById('hod-students-class-name');
         const mentorEl = document.getElementById('hod-students-mentor-info');
         
-        if (nameEl) nameEl.textContent = cls?.name || 'Class ' + classId;
-        if (mentorEl) {
-            const mentor1 = localStorage.getItem('mentor1_name') || 'Mentor 1';
+        console.log(`🎓 HOD: Showing students for Class ID ${classId} (${cls?.name})`);
+
+            if (nameEl) nameEl.textContent = cls?.name || 'Class ' + classId;
+            
+            if (mentorEl) {
+                const mentor1 = localStorage.getItem('mentor1_name') || 'Mentor 1'; // ...
+
             const mentor2 = localStorage.getItem('mentor2_name');
             mentorEl.textContent = mentor2 ? `Mentors: ${mentor1}, ${mentor2}` : `Mentor: ${mentor1}`;
         }
         
         // Navigate to student list page
         UI.nav('page-hod-students');
+        
+        // NUCLEAR OPTION: Force display block in case CSS fails
+        const page = document.getElementById('page-hod-students');
+        if (page) {
+            page.style.display = 'block';
+            page.classList.remove('hidden'); // Double ensure
+            console.log('☢️ NUCLEAR: Forced display block on page-hod-students');
+        }
         
         // Load students with attendance data
         await this.loadStudentsWithAttendance(classId);
@@ -595,14 +636,17 @@ const HOD = {
         listContainer.innerHTML = '<div class="text-center text-gray-500 py-8">Loading students...</div>';
         
         try {
+            console.log(`⏳ HOD: Fetching students for Class ${classId} from DB...`);
             // Get all students for this class
             const students = await new Promise((resolve, reject) => {
                 const tx = db.transaction('students', 'readonly');
                 const store = tx.objectStore('students');
                 const index = store.index('classId');
                 
-                index.getAll(parseInt(classId, 10)).onsuccess = e => {
-                    resolve(e.target.result || []);
+                index.getAll(IDBKeyRange.only(parseInt(classId, 10))).onsuccess = e => {
+                    const result = e.target.result || [];
+                    console.log(`✅ HOD: Found ${result.length} students in DB for Class ${classId}`);
+                    resolve(result);
                 };
                 tx.onerror = () => reject(tx.error);
             });
@@ -613,8 +657,9 @@ const HOD = {
                 const store = tx.objectStore('attendance');
                 const index = store.index('classId');
                 
-                index.getAll(parseInt(classId, 10)).onsuccess = e => {
-                    resolve(e.target.result || []);
+                index.getAll(IDBKeyRange.only(parseInt(classId, 10))).onsuccess = e => {
+                    const res = e.target.result || [];
+                    resolve(res);
                 };
                 tx.onerror = () => reject(tx.error);
             });
@@ -646,12 +691,30 @@ const HOD = {
     
     // Calculate attendance percentage for a single student
     calculateStudentAttendance(student, records) {
+        if (!student.subjects || Object.keys(student.subjects).length === 0) return 0;
+        
         let totalClasses = 0;
         let presentCount = 0;
         
         records.forEach(record => {
-            // H2 FIX: Normalize student ID (handle string vs number)
-            const status = record.records?.[student.id] || record.records?.[String(student.id)];
+        records.forEach(record => {
+            // ROBUST LOOKUP STRATEGY: Iterative Scan
+            let status = undefined;
+            const recKeys = Object.keys(record.records || {});
+            
+            // Scan keys for match (handles type/trim issues)
+            for (const key of recKeys) {
+                // Loose equality check + Trigger trimming
+                if (key == student.regNo || String(key).trim() === String(student.regNo).trim()) {
+                    status = record.records[key];
+                    break;
+                }
+            }
+            
+            // Fallback for normalized values
+            if (status === 0 || status === '0') status = 'Absent';
+            if (status === 1 || status === '1') status = 'Present';
+            
             if (status) {
                 totalClasses++;
                 if (status === 'Present') {

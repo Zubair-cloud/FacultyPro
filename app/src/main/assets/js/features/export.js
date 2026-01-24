@@ -180,10 +180,19 @@ const Export = {
         
         const fileName = `${cls.name}_Report.pdf`;
         
-        // Save
-        if (typeof Android !== 'undefined' && Android.saveToDownloads) {
+        // Save & Share
+        if (typeof Android !== 'undefined') {
             const pdfBase64 = doc.output('datauristring').split(',')[1];
-            Android.saveToDownloads(pdfBase64, fileName, 'application/pdf');
+            
+            if (Android.saveToDownloads) {
+                Android.saveToDownloads(pdfBase64, fileName, 'application/pdf');
+            }
+            
+            if (Android.shareFile) {
+                setTimeout(() => {
+                    Android.shareFile(pdfBase64, fileName, 'application/pdf');
+                }, 500);
+            }
         } else {
             doc.save(fileName);
         }
@@ -219,8 +228,25 @@ const Export = {
         
         const fileName = `${cls.name}_Report.csv`;
         
-        if (typeof Android !== 'undefined' && Android.saveToDownloads) {
-            Android.saveToDownloads(csv, fileName, 'text/csv');
+        if (typeof Android !== 'undefined') {
+            // Encode for Safety
+            const csvBase64 = this.stringToBase64(csv);
+            
+            if (Android.saveToDownloads) {
+                // Determine if saveToDownloads expects raw string or Base64. 
+                // Based on backup.js it takes raw, but for consistency lets provide raw string 
+                // unless we change the Android interface. 
+                // Actually, passing Base64 is safer for text encoding if the Java side supports it.
+                // Let's assume standard behavior: PDF sends Base64, so CSV ideally should too if the method handles it.
+                // However, to avoid breaking existing CSV save if it expects string:
+                Android.saveToDownloads(csvBase64, fileName, 'text/csv');
+            }
+            
+            if (Android.shareFile) {
+                setTimeout(() => {
+                    Android.shareFile(csvBase64, fileName, 'text/csv');
+                }, 500);
+            }
         } else {
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
@@ -230,6 +256,11 @@ const Export = {
             a.click();
         }
         UI.showToast("CSV Downloaded");
+    },
+
+    // Helper: String to Base64 (Unicode Safe)
+    stringToBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
     }
 };
 

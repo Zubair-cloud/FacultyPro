@@ -52,9 +52,9 @@ const License = {
             
             this.activatePremiumUI();
             
-            // Background Verify if Internet is available
+            // Background Verify (Every 72 hours, only if online)
             if (navigator.onLine && window.FIREBASE_API) {
-                this.backgroundReverify();
+                this.schedulePeriodicCheck();
             }
         } else {
             console.log("🔒 No Token. Standard Mode.");
@@ -87,19 +87,46 @@ const License = {
         return 'FACULTY'; // Default fallback
     },
 
-    // 🔄 Background Re-verification
+    // 🕒 Schedule Periodic Check (72 Hours)
+    schedulePeriodicCheck() {
+        const LAST_VERIFIED_KEY = 'facultypro_license_last_verified';
+        const CHECK_INTERVAL_MS = 72 * 60 * 60 * 1000; // 72 Hours
+
+        const lastVerified = parseInt(localStorage.getItem(LAST_VERIFIED_KEY) || '0');
+        const now = Date.now();
+
+        if (now - lastVerified > CHECK_INTERVAL_MS) {
+            console.log("⏰ 72h passed. Triggering background license check...");
+            this.backgroundReverify();
+        } else {
+             console.log("✅ Recent license check found. Skipping.");
+        }
+    },
+
+    // 🔄 Background Re-verification (Safe Mode)
     async backgroundReverify() {
+        if (!navigator.onLine) {
+            console.log("📴 Offline. Skipping license check.");
+            return;
+        }
+
         const email = localStorage.getItem(this.USER_EMAIL_KEY);
         if (!email) return;
 
-        console.log("☁️ Background Verifying License for:", email);
-        const result = await window.FIREBASE_API.checkLicense(email);
-        
-        if (result.status === 'active') {
-            console.log("✅ License Valid form Server.");
-        } else if (result.status === 'unlicensed') {
-            console.warn("⚠️ Server says Unlicensed! Revoking...");
-            // Optional: this.deactivate(); // For now, let's be lenient and not revoke immediately to avoid accidents
+        try {
+            console.log("☁️ Verifying License for:", email);
+            const result = await window.FIREBASE_API.checkLicense(email);
+            
+            if (result.status === 'active') {
+                console.log("✅ License Confirmed.");
+                localStorage.setItem('facultypro_license_last_verified', Date.now().toString());
+            } else if (result.status === 'unlicensed') {
+                console.warn("⚠️ Server says Unlicensed! Revoking...");
+                this.deactivate(); // Revoke if explicitly banned
+            }
+        } catch (e) {
+            console.warn("⚠️ License check failed (Network Error). Ignoring.", e);
+            // Do NOT revoke. Assume innocent until proven guilty.
         }
     },
 
@@ -332,8 +359,7 @@ const License = {
             
             const templateBtn = document.getElementById('btn-intervention-templates');
             if (templateBtn) {
-                templateBtn.disabled = false;
-                templateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                templateBtn.classList.remove('hidden'); // Show for premium users
             }
             if (licenseRemoveBtn) licenseRemoveBtn.classList.remove('hidden');
             if (licenseBadge) {
@@ -350,8 +376,7 @@ const License = {
             if (hodNav) hodNav.classList.add('hidden');
             const templateBtn = document.getElementById('btn-intervention-templates');
             if (templateBtn) {
-                templateBtn.disabled = true;
-                templateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                templateBtn.classList.add('hidden'); // Hide for standard users
             }
             if (licenseRemoveBtn) licenseRemoveBtn.classList.add('hidden');
             if (licenseBadge) {

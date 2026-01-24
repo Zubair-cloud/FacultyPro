@@ -78,15 +78,28 @@ const Backup = {
     // 5. Core Restore Logic
     async restoreFromJSON(jsonString) {
         try {
-            const data = JSON.parse(jsonString);
+            let data;
+            try {
+                data = JSON.parse(jsonString);
+            } catch (parseError) {
+                console.error("JSON Parse Error:", parseError);
+                return UI.showToast('Parsing Error: File is corrupted or invalid.');
+            }
 
             if (!data.classes || !Array.isArray(data.classes)) {
                 return UI.showToast('Invalid backup: No class data found');
             }
 
+            // SECURITY: Ensure we DO NOT restore license data even if present
+            if (data.profile) {
+                delete data.profile.license_token;
+                delete data.profile.user_role;
+                delete data.profile.user_email;
+            }
+
             const confirmed = await UI.showConfirm(
                 'Restore Data?',
-                'This will REPLACE all current data with the backup. Existing data will be lost.'
+                'This will REPLACE all current data. You will need to SIGN IN again to verify your license.'
             );
 
             if (!confirmed) return;
@@ -120,16 +133,21 @@ const Backup = {
                 data.attendance.forEach(a => attStore.put(a));
             }
 
-            // 4. Restore Profile (Fix Keys)
+            // 4. Restore Profile (Exclude License)
             if (data.profile) {
                  if (data.profile.name) localStorage.setItem('facultyName', data.profile.name);
                  if (data.profile.phone) localStorage.setItem('facultyPhone', data.profile.phone);
                  if (data.profile.subject) localStorage.setItem('facultySubject', data.profile.subject);
             }
 
+            // Reset License Data to Standard (User must sign in)
+            localStorage.removeItem('facultypro_license_token');
+            localStorage.removeItem('facultypro_user_role');
+            localStorage.removeItem('facultypro_user_email');
+
             tx.oncomplete = () => {
-                UI.showToast('Restore Complete!');
-                setTimeout(() => location.reload(), 1000);
+                UI.showToast('Restore Complete! Please Sign In.');
+                setTimeout(() => location.reload(), 1500);
             };
 
             tx.onerror = (e) => {

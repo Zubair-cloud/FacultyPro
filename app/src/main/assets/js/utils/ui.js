@@ -2,30 +2,48 @@
 // Extracted from attendance.html for modular architecture
 
 const UI = {
-    // Track loaded pages (home is inline, already loaded)
-    loadedPages: new Set(['page-home']),
+    // Track loaded pages (home and settings are inline, already loaded)
+    loadedPages: new Set(['page-home', 'page-settings', 'page-hod-students']),
     
-    // Load a page dynamically via fetch
+    // Load a page dynamically via XMLHttpRequest (fetch doesn't work with file:// in WebView)
     async loadPage(pageId) {
         if (this.loadedPages.has(pageId)) return true;
         
         const pageName = pageId.replace('page-', '');
-        try {
-            const response = await fetch(`pages/${pageName}.html`);
-            if (response.ok) {
-                const html = await response.text();
-                const container = document.getElementById('page-container');
-                if (container) {
-                    container.insertAdjacentHTML('beforeend', html);
+        const url = `pages/${pageName}.html`;
+        
+        console.log(`🔄 Loading page: ${url}`);
+        
+        return new Promise((resolve) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            
+            xhr.onload = () => {
+                if (xhr.status === 200 || xhr.status === 0) { // status 0 is OK for file://
+                    const html = xhr.responseText;
+                    const container = document.getElementById('page-container');
+                    if (container && html) {
+                        container.insertAdjacentHTML('beforeend', html);
+                        this.loadedPages.add(pageId);
+                        console.log(`✅ Loaded page: ${pageId}`);
+                        resolve(true);
+                    } else {
+                        console.error(`❌ Container missing or empty HTML for ${pageId}`);
+                        resolve(false);
+                    }
+                } else {
+                    console.error(`❌ Failed to load ${pageId}: HTTP ${xhr.status}`);
+                    resolve(false);
                 }
-                this.loadedPages.add(pageId);
-                console.log(`✅ Loaded page: ${pageId}`);
-                return true;
-            }
-        } catch (e) {
-            console.error(`Failed to load ${pageId}:`, e);
-        }
-        return false;
+            };
+            
+            xhr.onerror = (e) => {
+                console.error(`❌ XHR error loading ${pageId}:`, e);
+                resolve(false);
+            };
+            
+            xhr.send();
+        });
     },
 
     // Navigation between pages (now async for dynamic loading)
@@ -60,7 +78,10 @@ const UI = {
             bottomNav.style.transform = 'translateY(0)'; 
             if (attDock) attDock.style.transform = 'translateY(100%)'; 
         }
-        if (pageId === 'page-settings') bottomNav.style.transform = 'translateY(100%)';
+        // Settings page is inline, just hide nav
+        if (pageId === 'page-settings') {
+            bottomNav.style.transform = 'translateY(100%)';
+        }
     },
 
     // Show toast notification
