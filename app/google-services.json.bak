@@ -14,22 +14,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "241911004176-0lnslp527p6et7pr87fccbkitqregtl9.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.zinclabs.facultypro",
-            "certificate_hash": "08403215a827b8ff307909c68a3b38ebdb1c938f"
-          }
-        },
-        {
-          "client_id": "241911004176-inta7injng6sk2mprc9kcbos6c2m56sb.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.zinclabs.facultypro",
-            "certificate_hash": "dbf3f31f10d8477b5a1a626f2684103164a68131"
-          }
-        },
-        {
           "client_id": "241911004176-oufmt390pan0tlhjnlj0qpohl68dm7ut.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
