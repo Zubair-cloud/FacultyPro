@@ -4,7 +4,7 @@ import { getFirestore, doc, getDoc, setDoc, runTransaction } from "https://www.g
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyClJn2UvHDxthOy2tion3R_gnA6b_asY_o",
+    apiKey: "AIzaSyCq0SHuAx3UeQszrZwsIdDYr5NFR8NMP8k",
     authDomain: "facultypro-licensing.firebaseapp.com",
     projectId: "facultypro-licensing",
     storageBucket: "facultypro-licensing.firebasestorage.app",
