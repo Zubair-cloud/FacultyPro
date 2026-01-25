@@ -62,6 +62,7 @@ const UI = {
 
         if (pageId === 'page-manage') loadManageClasses();
         if (pageId === 'page-export') loadExportClasses();
+        if (pageId === 'page-analytics') populateAnalyticsClasses();
 
         const bottomNav = document.getElementById('bottom-nav');
         const attDock = document.getElementById('attendance-dock');

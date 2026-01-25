@@ -1,32 +1,36 @@
 <div id="page-export" class="page">
-            <div class="flex items-center p-4 pb-2">
-                <h2 class="text-white text-xl font-bold flex-1 text-center">Export Data</h2>
+    <div class="flex items-center p-4 pb-2">
+        <h2 class="text-white text-xl font-bold flex-1 text-center">Export Data</h2>
+    </div>
+    <div class="p-6 space-y-6 max-w-2xl mx-auto">
+        <div class="glass-panel rounded-2xl p-6 space-y-6">
+            <h3 class="text-white text-2xl font-bold">Export Report</h3>
+            <div><label class="text-gray-400 text-sm font-medium pb-2 block">Select Class</label><select
+                    id="export-class"
+                    class="form-select w-full rounded-xl bg-black/20 border-none px-4 py-3.5 text-white"></select>
             </div>
-            <div class="p-6 space-y-6 max-w-2xl mx-auto">
-                <div class="glass-panel rounded-2xl p-6 space-y-6">
-                    <h3 class="text-white text-2xl font-bold">Export Report</h3>
-                    <div><label class="text-gray-400 text-sm font-medium pb-2 block">Select Class</label><select
-                            id="export-class"
-                            class="form-select w-full rounded-xl bg-black/20 border-none px-4 py-3.5 text-white"></select>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="text-gray-400 text-sm font-medium pb-2 block">Start Date</label><input
-                                type="date" id="export-start"
-                                class="w-full rounded-xl bg-black/20 border-none px-4 py-3 text-white text-sm"></div>
-                        <div><label class="text-gray-400 text-sm font-medium pb-2 block">End Date</label><input
-                                type="date" id="export-end"
-                                class="w-full rounded-xl bg-black/20 border-none px-4 py-3 text-white text-sm"></div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="generateReport('pdf')"
-                            class="flex flex-col items-center justify-center gap-2 h-20 rounded-xl glass-card border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition"><span
-                                class="material-symbols-outlined text-red-400 text-3xl">picture_as_pdf</span><span
-                                class="text-xs font-bold text-red-100">PDF</span></button>
-                        <button onclick="generateReport('csv')"
-                            class="flex flex-col items-center justify-center gap-2 h-20 rounded-xl glass-card border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition"><span
-                                class="material-symbols-outlined text-green-400 text-3xl">table_view</span><span
-                                class="text-xs font-bold text-green-100">Excel / CSV</span></button>
-                    </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="text-gray-400 text-sm font-medium pb-2 block">Start Date</label><input type="date"
+                        id="export-start"
+                        class="w-full rounded-xl bg-black/20 border-none px-4 py-3 text-white text-sm"></div>
+                <div><label class="text-gray-400 text-sm font-medium pb-2 block">End Date</label><input type="date"
+                        id="export-end" class="w-full rounded-xl bg-black/20 border-none px-4 py-3 text-white text-sm">
                 </div>
             </div>
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="generateReport('pdf')"
+                    class="flex flex-col items-center justify-center gap-2 h-20 rounded-xl glass-card border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 transition"><span
+                        class="material-symbols-outlined text-red-400 text-3xl">picture_as_pdf</span><span
+                        class="text-xs font-bold text-red-100">PDF</span></button>
+                <button onclick="generateReport('csv')"
+                    class="flex flex-col items-center justify-center gap-2 h-20 rounded-xl glass-card border border-green-500/30 bg-green-500/10 hover:bg-green-500/20 transition"><span
+                        class="material-symbols-outlined text-green-400 text-3xl">table_view</span><span
+                        class="text-xs font-bold text-green-100">Excel</span></button>
+                <button onclick="generateReport('word')"
+                    class="flex flex-col items-center justify-center gap-2 h-20 rounded-xl glass-card border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 transition"><span
+                        class="material-symbols-outlined text-blue-400 text-3xl">description</span><span
+                        class="text-xs font-bold text-blue-100">Word</span></button>
+            </div>
         </div>
+    </div>
+</div>

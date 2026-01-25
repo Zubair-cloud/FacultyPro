@@ -349,86 +349,7 @@ const Attendance = {
         }
     },
 
-    // NEW: Export magic token for this attendance
-  async exportMagicToken() {
-    if (!db) throw new Error('Database not available');
-    
-    const btn = document.querySelector('button[onclick="exportMagicToken()"]');
-    // Save original icon/content. Usually it's an icon in the dock.
-    // The button html might be complex. Let's just disable it and show a toast if it's fast.
-    // Or change opacity.
-    
-    if (btn) btn.style.opacity = '0.5';
 
-    try {
-        if (!this.activeClass) {
-            throw new Error('No class selected');
-        }
-        
-        // H5 FIX: Fetch saved attendance instead of using tempAttendance
-        const savedRecord = await new Promise((resolve, reject) => {
-            const tx = db.transaction('attendance', 'readonly');
-            const store = tx.objectStore('attendance');
-            const index = store.index('classId');
-            
-            index.getAll(this.activeClass.id).onsuccess = e => {
-                const records = e.target.result;
-                const record = records.find(r => r.date === this.currentAttendanceDate);
-                resolve(record);
-            };
-            
-            index.onerror = () => reject(index.error);
-            tx.onerror = () => reject(tx.error);
-        });
-        
-        if (!savedRecord || !savedRecord.records || Object.keys(savedRecord.records).length === 0) {
-            throw new Error("No saved attendance found for this date. Please save attendance first.");
-        }
-    
-        const data = {
-          classId: this.activeClass.id,
-          className: this.activeClass.name,
-          date: this.currentAttendanceDate,
-          subject: savedRecord.subject || localStorage.getItem("facultySubject") || "General",
-          faculty: savedRecord.faculty || localStorage.getItem("facultyName") || "Unknown",
-          facultyEmail: localStorage.getItem("facultypro_user_email") || "",
-          records: savedRecord.records,
-          presentCount: Object.values(savedRecord.records).filter(
-            (s) => s === "Present"
-          ).length,
-          totalCount: Object.keys(savedRecord.records).length,
-          timestamp: savedRecord.timestamp || Date.now()
-        };
-    
-        const token = TokenUtils.encode(data, "FACULTY_ATTENDANCE");
-    
-        if (token) {
-          const copied = await TokenUtils.copyToClipboard(token);
-          if (copied) {
-            UI.showToast("🪄 Token copied! Share with your class mentor.");
-          } else {
-            // Fallback: show in a modal for manual copy
-            this.showTokenModal(token);
-          }
-        } else {
-          throw new Error("Failed to generate token");
-        }
-    } catch(e) {
-        UI.showToast(e.message);
-    } finally {
-        if (btn) btn.style.opacity = '1';
-    }
-  },
-
-    // NEW: Show token in modal for manual copy
-    showTokenModal(token) {
-        const modal = document.getElementById("token-export-modal");
-        const textarea = document.getElementById("token-export-text");
-        if (modal && textarea) {
-          textarea.value = token;
-          modal.classList.remove("hidden");
-        }
-    },
 };
 
 // Export to global scope
@@ -445,7 +366,6 @@ window.onDateChange = (input) => Attendance.onDateChange(input);
 window.updateModeBanner = () => Attendance.updateModeBanner();
 window.navigatePrevDay = () => Attendance.navigatePrevDay();
 window.navigateNextDay = () => Attendance.navigateNextDay();
-window.exportMagicToken = () => Attendance.exportMagicToken();
 
 // Expose state variables for backward compatibility
 Object.defineProperty(window, 'activeClass', {

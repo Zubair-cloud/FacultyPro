@@ -738,85 +738,6 @@
         </div>
     </div>
 
-    <!-- Analytics: Student Profile Drill-Down -->
-    <div id="modal-analytics-profile-OLD" class="hidden"
-        class="modal-overlay fixed inset-0 z-[70] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
-        <div
-            class="modal-content w-full h-[85vh] sm:h-auto sm:max-w-md rounded-t-3xl sm:rounded-3xl glass-card flex flex-col border border-[var(--primary)]/20 bg-[var(--bg-surface)] shadow-2xl">
-
-            <!-- Header -->
-            <div class="p-6 pb-2 border-b border-white/5">
-                <div class="flex justify-between items-start">
-                    <div class="flex items-center gap-3">
-                        <div id="anl-profile-avatar"
-                            class="size-14 rounded-full bg-gradient-to-br from-[#DEBE63] to-[#5D250D] p-0.5">
-                            <div class="size-full rounded-full bg-black flex items-center justify-center">
-                                <span id="anl-profile-initial" class="text-xl font-bold text-[var(--primary)]">A</span>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 id="anl-profile-name" class="text-lg font-bold text-white leading-tight">Student Name
-                            </h3>
-                            <p id="anl-profile-reg" class="text-xs text-gray-400 font-mono mt-0.5">REG12345</p>
-                        </div>
-                    </div>
-                    <button onclick="closeModal('modal-analytics-profile')"
-                        class="size-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-white/10 hover:text-white transition">
-                        <span class="material-symbols-outlined text-lg">close</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-6 space-y-6">
-
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="glass-card p-4 rounded-2xl bg-white/5 border border-white/5">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Attendance</p>
-                        <h2 id="anl-profile-percent" class="text-3xl font-bold text-[var(--primary)] mt-1">0%</h2>
-                    </div>
-                    <div class="glass-card p-4 rounded-2xl bg-white/5 border border-white/5">
-                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Sessions</p>
-                        <h2 id="anl-profile-sessions" class="text-xl font-bold text-white mt-2">0/0</h2>
-                    </div>
-                </div>
-
-                <!-- Sparkline Trend Graph -->
-                <div>
-                    <p class="text-xs text-gray-400 font-bold mb-3 uppercase tracking-wider flex items-center gap-2">
-                        <span class="material-symbols-outlined text-sm">trending_up</span> Attendance Trend
-                    </p>
-                    <div class="h-24 w-full bg-white/5 rounded-xl border border-white/5 relative overflow-hidden flex items-end px-2 pb-2"
-                        id="anl-sparkline-container">
-                        <!-- SVG Line injected here -->
-                    </div>
-                </div>
-
-                <!-- Recent History List -->
-                <div>
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider">Recent History</p>
-                        <span class="text-[10px] text-gray-500">Last 10 sessions</span>
-                    </div>
-                    <div id="anl-history-list" class="space-y-2">
-                        <!-- History Items Injected Here -->
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Sticky Action Button -->
-            <div class="p-4 border-t border-white/10 bg-[var(--bg-surface)]/90 backdrop-blur pb-8 sm:pb-4">
-                <button onclick="Analytics.openIntervention()"
-                    class="w-full py-4 rounded-xl bg-[var(--primary)] text-black font-bold text-sm tracking-wide shadow-[0_0_20px_rgba(222,190,99,0.3)] hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined">bolt</span>
-                    TAKE ACTION
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Intervention Modal (Letter Preview) -->
     <div id="modal-intervention"
         class="modal-overlay fixed inset-0 z-[80] hidden items-end sm:items-center justify-center bg-black/80 backdrop-blur-md">
@@ -1027,7 +948,7 @@
     <script src="js/core/config.js"></script>
 
     <!-- 1.1 External Libraries (Offline) -->
-    <script src="js/libs/jspdf.min.js"></script>
+
     <script src="js/libs/html-docx.js"></script>
     <script src="js/core/dsu_logo.js"></script>
 

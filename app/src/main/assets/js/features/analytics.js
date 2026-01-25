@@ -9,12 +9,35 @@ const Analytics = {
         star: 90         // Above 90% = Star Performer (Gold)
     },
 
-    // State to hold calculated data
     currentClassStats: {
         classId: null,
         totalClasses: 0,
         avgAttendance: 0,
         students: [] // [{id, name, regNo, presentCount, totalCount, percentage, status}]
+    },
+
+    // Populate class dropdown (Self-contained, reliable)
+    populateClassDropdown() {
+        const sel = document.getElementById('analytics-class-select');
+        if (!sel) return console.warn('Analytics: Dropdown not found');
+        
+        if (!db) return console.error('Analytics: DB not ready');
+        
+        const tx = db.transaction('classes', 'readonly');
+        tx.objectStore('classes').getAll().onsuccess = e => {
+            const classes = e.target.result;
+            sel.innerHTML = '<option value="">Choose a class...</option>';
+            
+            if (classes.length === 0) {
+                 sel.innerHTML += '<option disabled>No classes found</option>';
+                 return;
+            }
+            
+            classes.forEach(c => {
+                sel.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+            });
+            console.log(`Analytics: Populated ${classes.length} classes`);
+        };
     },
 
     /**
@@ -493,4 +516,5 @@ const Analytics = {
 
 // Export Logic
 window.Analytics = Analytics;
+window.populateAnalyticsClasses = () => Analytics.populateClassDropdown();
 console.log('✅ Analytics Core Module Loaded');

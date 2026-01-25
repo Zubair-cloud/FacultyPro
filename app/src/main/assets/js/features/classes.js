@@ -110,45 +110,36 @@ const Classes = {
 
     // Load classes for manage page
     loadManageClasses() {
-        if (!db) return;
+        if (!db) {
+            console.error('Classes: DB not ready');
+            return;
+        }
+        console.log('Classes: loadManageClasses called');
+        
         const sel = [
             document.getElementById('manage-class-select'),
             document.getElementById('hist-class-select'),
             document.getElementById('backlog-class-select'),
             document.getElementById('timing-class-select'),
-            document.getElementById('analytics-class-select'),
-            document.getElementById('set-mentor-class')  // Mentor class dropdown in settings
+            document.getElementById('analytics-class-select')
         ];
+        
+        console.log('Classes: Elements found:', sel.map(s => s ? s.id : 'null'));
         
         const tx = db.transaction('classes', 'readonly');
         tx.objectStore('classes').getAll().onsuccess = e => {
             const classes = e.target.result;
+            console.log(`Classes: Found ${classes.length} classes`);
+            
             sel.forEach(s => {
                 if (s) {
-                    // Check if it's the mentor class dropdown (needs different placeholder)
-                    const isMentorSelect = s.id === 'set-mentor-class';
-                    s.innerHTML = isMentorSelect 
-                        ? '<option value="">-- Select Your Main Class --</option>'
-                        : '<option value="">Select Class</option>';
+                    console.log(`Classes: Populating ${s.id}`);
+                    s.innerHTML = '<option value="">Select Class</option>';
                     classes.forEach(c => {
                         s.innerHTML += `<option value="${c.id}">${c.name}</option>`;
                     });
-                    
-                    // Restore mentor class selection
-                    if (isMentorSelect) {
-                        const saved = localStorage.getItem('mentorClassId');
-                        if (saved) s.value = saved;
-                    }
                 }
             });
-            
-            // Update mentor display on home page
-    if (window.updateMentorClassDisplay) {
-        updateMentorClassDisplay(); // M4 FIX: Now called after classes loaded
-    }
-            if (window.updateMentorClassDisplay) {
-                updateMentorClassDisplay();
-            }
         };
     },
 
