@@ -6,14 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Faculty Pro - Modular</title>
 
-    <!-- External Dependencies -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- All Dependencies Bundled Locally (no CDN, no cache issues) -->
+    <script src="libs/tailwindcss.js"></script>
+    <link rel="stylesheet" href="css/lexend.css">
+    <link rel="stylesheet" href="css/material-symbols.css">
+    <script src="libs/jspdf.umd.min.js"></script>
+    <script src="libs/jspdf.plugin.autotable.min.js"></script>
 
     <!-- Tailwind Configuration (Extracted) -->
     <script src="css/tailwind.config.js"></script>
@@ -77,29 +75,6 @@
                             class="material-symbols-outlined text-lg">add</span> New Class</button>
                 </div>
                 <div id="home-class-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-
-                <!-- Mentor Section (My Main Class) -->
-                <div id="home-mentor-section" class="hidden mt-6">
-                    <div
-                        class="glass-card p-4 rounded-2xl border border-[var(--primary)]/30 bg-gradient-to-r from-[var(--primary)]/5 to-transparent">
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <p
-                                    class="text-xs text-[var(--primary)] font-bold uppercase tracking-wider flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">school</span> My Class (Mentor)
-                                </p>
-                                <p id="home-mentor-class-name" class="text-white font-bold text-lg mt-1">A14</p>
-                            </div>
-                            <button onclick="Mentor.openPanel()"
-                                class="px-4 py-2 rounded-xl bg-[var(--primary)] text-[var(--on-primary)] font-bold text-sm shadow-[0_0_15px_var(--primary-dim)] hover:scale-105 transition">
-                                <span class="flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-lg">folder_open</span>
-                                    OPEN
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="pb-24"></div>
             </div>
@@ -304,77 +279,6 @@
                     </div>
                     <button onclick="saveProfile()"
                         class="text-[var(--primary)] font-bold text-sm hover:text-white transition">SAVE</button>
-                </div>
-
-                <!-- Mentor Class Section -->
-                <div class="p-4 rounded-2xl glass-card border border-[var(--primary)]/20">
-                    <h3 class="text-white font-bold mb-3 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[var(--primary)]">school</span>
-                        My Main Class (Mentor)
-                    </h3>
-                    <select id="set-mentor-class" onchange="saveMentorClass()"
-                        class="w-full rounded-xl bg-black/30 border border-white/10 text-white px-4 py-3 focus:border-[var(--primary)] transition">
-                        <option value="">-- Select Your Main Class --</option>
-                        <!-- Populated dynamically by Classes.loadManageClasses() -->
-                    </select>
-                    <p class="text-xs text-gray-500 mt-2">
-                        <span class="material-symbols-outlined text-[10px] align-middle">info</span>
-                        You'll receive attendance tokens from faculty who teach in this class.
-                    </p>
-                </div>
-
-
-                <!-- Student Import Section (for Faculty) -->
-                <div id="student-import-section" class="glass-card p-4 rounded-2xl">
-                    <h3 class="text-white font-bold mb-2 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[var(--primary)]">download</span>
-                        Import Student Roster
-                    </h3>
-                    <p class="text-xs text-gray-500 mb-3">Paste the student format token shared by your mentor</p>
-
-                    <textarea id="student-import-input" rows="3" placeholder="Paste FPROSTU_ token here..."
-                        class="w-full rounded-xl bg-black/30 border border-white/10 text-white text-xs font-mono px-3 py-2 resize-none mb-2"></textarea>
-
-                    <div class="flex gap-2">
-                        <button onclick="StudentImport.pasteFromClipboard()"
-                            class="flex-1 py-2 rounded-xl border border-white/20 text-white font-bold text-sm">
-                            📋 PASTE
-                        </button>
-                        <button onclick="StudentImport.importStudentFormat()"
-                            class="flex-1 py-2 rounded-xl bg-green-500/20 border border-green-500/30 text-green-400 font-bold text-sm">
-                            ✅ IMPORT
-                        </button>
-                    </div>
-                </div>
-
-
-                <!-- Mentor Names Section (for Mentor role) -->
-                <div id="mentor-names-section" class="p-6 rounded-2xl glass-card space-y-4 border border-purple-500/20">
-                    <h3 class="text-white font-bold flex items-center gap-2">
-                        <span class="material-symbols-outlined text-purple-400">supervisor_account</span>
-                        Mentor Details
-                    </h3>
-                    <p class="text-xs text-gray-500">Enter mentor names for this class (shared in tokens)</p>
-
-                    <div class="space-y-3">
-                        <div>
-                            <label class="text-xs text-gray-400 mb-1 block">Mentor 1 Name</label>
-                            <input id="mentor1-name-input" type="text" placeholder="Your name (as Mentor 1)"
-                                class="w-full rounded-xl bg-black/30 border border-white/10 text-white text-sm px-4 py-3 focus:border-purple-500 transition"
-                                oninput="localStorage.setItem('mentor1_name', this.value)">
-                        </div>
-
-                        <div>
-                            <label class="text-xs text-gray-400 mb-1 block">Mentor 2 Name (Co-Mentor)</label>
-                            <input id="mentor2-name-input" type="text" placeholder="Co-mentor name (optional)"
-                                class="w-full rounded-xl bg-black/30 border border-white/10 text-white text-sm px-4 py-3 focus:border-purple-500 transition"
-                                oninput="localStorage.setItem('mentor2_name', this.value)">
-                        </div>
-                    </div>
-
-                    <p class="text-xs text-gray-500 italic">
-                        These names will be included in Student Format and Consolidated Report tokens.
-                    </p>
                 </div>
 
                 <!-- License Section -->
@@ -684,11 +588,6 @@
     <div id="attendance-dock"
         class="fixed bottom-0 left-0 right-0 w-full bg-[var(--bg-surface)] border-t border-white/10 p-4 z-[60] md:max-w-3xl lg:max-w-5xl mx-auto shadow-2xl shadow-black transform translate-y-full">
         <div class="flex gap-2">
-            <button onclick="exportMagicToken()"
-                class="h-14 px-4 rounded-xl glass-card border-purple-500/30 text-purple-400 font-bold active:scale-95 transition flex items-center justify-center gap-1 hover:bg-purple-500/10"
-                title="Export token for mentor">
-                <span class="material-symbols-outlined">share</span>
-            </button>
             <button onclick="saveAttendance('draft')"
                 class="flex-1 h-14 rounded-xl glass-card border-yellow-500/30 text-yellow-400 font-bold active:scale-95 transition flex items-center justify-center gap-2 hover:bg-yellow-500/10">
                 <span class="material-symbols-outlined">edit_calendar</span> Late Entry

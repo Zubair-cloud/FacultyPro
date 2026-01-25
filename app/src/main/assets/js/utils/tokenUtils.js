@@ -5,8 +5,7 @@ const TokenUtils = {
     // Token prefixes for identification
     PREFIXES: {
         FACULTY_ATTENDANCE: 'FPROATT_',      // Single subject attendance
-        STUDENT_FORMAT: 'FPROSTU_',          // Student roster format
-        CONSOLIDATED_REPORT: 'FPROREPORT_'   // Mentor → HOD report
+        STUDENT_FORMAT: 'FPROSTU_'           // Student roster format
     },
 
     // Encode data to magic token

@@ -26,15 +26,6 @@ const License = {
             "--bg-glow-secondary": "rgba(93, 37, 13, 0.3)", // Maroon Glow
             "--accent-text": "#DEBE63"      // Gold
         },
-        HOD: {
-            "--primary": "#F97316",         // Orange 500
-            "--primary-dim": "rgba(249, 115, 22, 0.2)",
-            "--primary-dark": "#C2410C",    // Orange 700
-            "--on-primary": "#FFFFFF",      // White Text
-            "--bg-surface": "#0C0A09",      // Warm Black
-            "--bg-glow-secondary": "rgba(124, 45, 18, 0.2)", // Rust Glow
-            "--accent-text": "#FDBA74"      // Orange 300
-        }
     },
 
     // 🚀 Initialization
@@ -75,9 +66,7 @@ const License = {
                 const decodedKey = atob(encodedKey);
                 
                 // Check actual key prefix (including TEST keys)
-                if (decodedKey.startsWith('ZINC-HOD-') || decodedKey.startsWith('TEST-HOD-')) {
-                    return 'HOD';
-                } else if (decodedKey.startsWith('ZINC-DSU-') || decodedKey.startsWith('TEST-FACULTY-')) {
+                if (decodedKey.startsWith('ZINC-DSU-') || decodedKey.startsWith('TEST-FACULTY-')) {
                     return 'FACULTY';
                 }
             }
@@ -138,35 +127,12 @@ const License = {
                 <button onclick="License.handleGoogleLogin()" 
                     class="w-full py-3 rounded-xl bg-white text-black font-bold text-sm hover:opacity-90 active:scale-95 transition flex items-center justify-center gap-2">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">
-                    Sign in with DSU Email
+                    Sign in With Gmail
                 </button>
                 <p class="text-[10px] text-center text-gray-500 mt-2">Sign in to verify your faculty license.</p>
-                
-                <!-- TEST MODE: Quick License Buttons -->
-                <div class="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-                    <p class="text-[10px] text-yellow-400 font-bold mb-2">🧪 TEST MODE</p>
-                    <div class="flex gap-2">
-                        <button onclick="License.activateTestLicense('FACULTY')" class="flex-1 py-2 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold">Faculty 1</button>
-                        <button onclick="License.activateTestLicense('FACULTY')" class="flex-1 py-2 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold">Faculty 2</button>
-                        <button onclick="License.activateTestLicense('HOD')" class="flex-1 py-2 bg-orange-500/20 border border-orange-500/30 text-orange-400 rounded-lg text-xs font-bold">HOD</button>
-                    </div>
-                </div>
             `;
             container.classList.remove('hidden');
         }
-    },
-    
-    // TEST MODE: Activate test license
-    activateTestLicense(role) {
-        const key = role === 'HOD' ? 'TEST-HOD-001' : 'TEST-FACULTY-' + Date.now();
-        console.log('🧪 Activating test license:', role);
-        
-        localStorage.setItem('facultypro_user_role', role);
-        this.saveOfflineToken(key);
-        this.activatePremiumUI();
-        UI.showToast(`✅ Test ${role} License Activated`);
-        
-        setTimeout(() => location.reload(), 800);
     },
 
     // 🟢 Action: Handle Google Login
@@ -299,15 +265,8 @@ const License = {
 
     // 🔓 Unlock Premium UI
     activatePremiumUI() {
-        const role = localStorage.getItem('facultypro_user_role') || 'FACULTY';
-        
-        if (role === 'HOD') {
-            this.applyTheme(this.THEMES.HOD);
-        } else {
-            this.applyTheme(this.THEMES.PREMIUM);
-        }
-        
-        this.unlockFeatures(true, role);
+        this.applyTheme(this.THEMES.PREMIUM);
+        this.unlockFeatures(true);
         
         // Hide Login UI
         const container = document.getElementById('license-input-group');
@@ -335,27 +294,15 @@ const License = {
     },
 
     // 🛠️ Feature Toggles
-    unlockFeatures(isPremium, role = 'FACULTY') {
+    unlockFeatures(isPremium) {
         const analyticsNav = document.getElementById('nav-analytics');
         const licenseRemoveBtn = document.getElementById('license-remove-btn');
         const licenseBadge = document.getElementById('license-status-badge');
         const homeLogoGeneric = document.getElementById('home-logo-generic');
         const homeLogoDSU = document.getElementById('home-logo-dsu');
-        
-        // HOD Specifics
-        const hodNav = document.getElementById('nav-hod-panel');
-        const mentorSection = document.getElementById('home-mentor-section');
 
         if (isPremium) {
             if (analyticsNav) analyticsNav.classList.remove('hidden');
-            
-            // Show HOD Nav if role is HOD
-            if (role === 'HOD') {
-                if (hodNav) hodNav.classList.remove('hidden');
-                // HOD can also be a mentor for their own class, so keep mentor section logic dynamic
-            } else {
-                if (hodNav) hodNav.classList.add('hidden');
-            }
             
             const templateBtn = document.getElementById('btn-intervention-templates');
             if (templateBtn) {
@@ -363,17 +310,14 @@ const License = {
             }
             if (licenseRemoveBtn) licenseRemoveBtn.classList.remove('hidden');
             if (licenseBadge) {
-                licenseBadge.innerText = role === 'HOD' ? "HOD ACCESS" : "PREMIUM";
-                licenseBadge.className = role === 'HOD' 
-                    ? "px-3 py-1 rounded-lg bg-orange-500/10 border border-orange-500 text-xs text-orange-500 font-bold tracking-wider shadow-[0_0_10px_orange]"
-                    : "px-3 py-1 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)] text-xs text-[var(--primary)] font-bold tracking-wider shadow-[0_0_10px_var(--primary-dim)]";
+                licenseBadge.innerText = "PREMIUM";
+                licenseBadge.className = "px-3 py-1 rounded-lg bg-[var(--primary)]/10 border border-[var(--primary)] text-xs text-[var(--primary)] font-bold tracking-wider shadow-[0_0_10px_var(--primary-dim)]";
             }
             if (homeLogoDSU) homeLogoDSU.classList.remove('hidden');
             if (homeLogoGeneric) homeLogoGeneric.classList.add('hidden');
 
         } else {
             if (analyticsNav) analyticsNav.classList.add('hidden');
-            if (hodNav) hodNav.classList.add('hidden');
             const templateBtn = document.getElementById('btn-intervention-templates');
             if (templateBtn) {
                 templateBtn.classList.add('hidden'); // Hide for standard users
